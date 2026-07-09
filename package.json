@@ -1,0 +1,27 @@
+{
+  "name": "programadores-es-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gtshadow33/Programadores-ES-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gtshadow33/Programadores-ES-/issues"
+  },
+  "homepage": "https://github.com/gtshadow33/Programadores-ES-#readme",
+  "devDependencies": {
+    "electron": "^43.1.0"
+  },
+  "dependencies": {
+    "sqlite3": "^6.0.1"
+  }
+}
