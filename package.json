@@ -1,27 +1,33 @@
 {
-  "name": "programadores-es-",
+  "name": "programadores-es",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Aplicación de escritorio desarrollada con Electron",
+  "keywords": [
+    "electron",
+    "nodejs",
+    "sqlite3"
+  ],
+  "homepage": "https://github.com/gtshadow33/Programadores-ES-#readme",
+  "bugs": {
+    "url": "https://github.com/gtshadow33/Programadores-ES-/issues"
   },
+  "license": "ISC",
+  "author": "",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gtshadow33/Programadores-ES-.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/gtshadow33/Programadores-ES-/issues"
-  },
-  "homepage": "https://github.com/gtshadow33/Programadores-ES-#readme",
-  "devDependencies": {
-    "electron": "^43.1.0"
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "test": "echo \"No hay pruebas configuradas\" && exit 0"
   },
   "dependencies": {
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "electron": "^43.1.0"
   }
 }
