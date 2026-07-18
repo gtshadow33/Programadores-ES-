@@ -17,7 +17,6 @@
     "type": "git",
     "url": "git+https://github.com/gtshadow33/Programadores-ES-.git"
   },
-  "type": "module",
   "main": "main.js",
   "scripts": {
     "dev": "electron .",

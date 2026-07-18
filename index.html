@@ -2,11 +2,23 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Hola Electron</title>
+    <title>Mi App Electron</title>
 </head>
 <body>
 
-<h1>¡Hola Mundo desde Electron!</h1>
+    <h1>Ejemplo Electron</h1>
+
+    <input
+        id="nombre"
+        type="text"
+        placeholder="Escribe tu nombre"
+    >
+
+    <button id="boton">
+        Saludar
+    </button>
+
+    <script type="module" src="./renderer.js"></script>
 
 </body>
 </html>
