@@ -66,3 +66,8 @@ coverage/
 # Certificados
 *.pem
 *.key
+
+# otros
+Dockerfile
+docker-compose.yaml
+.dockerignore
