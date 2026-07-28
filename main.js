@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
+const { initDatabase, closeDatabase } = require("./db");
 const path = require("path");
 
 let mainWindow;
@@ -22,6 +23,8 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  initDatabase(); 
+  console.log("BBDD guardada en:", path.join(app.getPath("userData"), "control_horas.sqlite"));
   createWindow();
 
   app.on("activate", () => {
