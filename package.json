@@ -21,14 +21,18 @@
   "scripts": {
     "dev": "electron .",
     "start": "electron .",
-    "test": "jest"
+    "test": "jest",
+    "css:build": "npx @tailwindcss/cli -i src/input.css -o assets/styles.css --minify",
+    "css:watch": "npx @tailwindcss/cli -i src/input.css -o assets/styles.css --watch"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.1",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
     "electron": "^43.2.0",
-    "jest": "^30.4.2"
+    "jest": "^30.4.2",
+    "tailwindcss": "^4.3.3"
   }
 }
