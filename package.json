@@ -21,12 +21,16 @@
   "scripts": {
     "dev": "electron .",
     "start": "electron .",
+    "build:css": "npx @tailwindcss/cli -i ./assets/input.css -o ./assets/styles.css",
+    "watch:css": "npx @tailwindcss/cli -i ./assets/input.css -o ./assets/styles.css --watch",
     "test": "echo \"No hay pruebas configuradas\" && exit 0"
   },
   "dependencies": {
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
-    "electron": "^43.2.0"
+    "@tailwindcss/cli": "^4.3.3",
+    "electron": "^43.2.0",
+    "tailwindcss": "^4.3.3"
   }
 }
