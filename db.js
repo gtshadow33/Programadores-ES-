@@ -5,7 +5,8 @@ const Database = require("better-sqlite3");
 let db;
 
 function initDatabase() {
-  const dbPath = path.join(app.getPath("userData"), "control_horas.sqlite");
+   //./porgarmadores_es.db
+  const dbPath = path.join(__dirname, "programadores_es.db");
   const isNew = !require("fs").existsSync(dbPath);
 
   db = new Database(dbPath);
