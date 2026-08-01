@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const { initDatabase, closeDatabase } = require("./db");
-const repo = require("./repository");
+const repo = require("./src/db/repository");
 const path = require("path");
 
 let mainWindow;
