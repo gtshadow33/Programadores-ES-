@@ -10,7 +10,7 @@ jest.mock("electron", () => ({
   }
 }));
 
-const { initDatabase, closeDatabase } = require("../db.js");
+const { initDatabase, closeDatabase } = require("../src/db/db.js");
 
 beforeEach(() => {
   // Carpeta nueva y única en cada test, así nunca hay datos residuales
