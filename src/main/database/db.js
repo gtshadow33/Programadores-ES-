@@ -6,7 +6,7 @@ let db;
 
 function initDatabase() {
    //./porgarmadores_es.db
-  const dbPath = path.join(__dirname, "programadores_es.db");
+  const dbPath = path.join(__dirname, "../../programadores_es.db");
   const isNew = !require("fs").existsSync(dbPath);
 
   db = new Database(dbPath);
