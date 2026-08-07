@@ -34,7 +34,6 @@ counterButton.addEventListener("click", () => {
         return
     }
     let activityDetailsStr = document.getElementById("activity-details").value;
-    const 
     // get project, activity from activity Details to save it into database
     // if the activity details is empty put a random activity or ask for the name of the activity
     if (activityDetailsStr == "") {
