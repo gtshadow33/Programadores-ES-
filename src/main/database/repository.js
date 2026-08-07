@@ -1,4 +1,4 @@
-const { getDb } = require("./db");
+const { getDb } = require("../database/db");
 
 // =====================================================================
 // MONEDAS

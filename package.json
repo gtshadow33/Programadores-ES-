@@ -17,16 +17,16 @@
     "type": "git",
     "url": "git+https://github.com/gtshadow33/Programadores-ES-.git"
   },
-  "main": "main.js",
+  "main": "src/main/main.js",
   "scripts": {
     "dev": "electron .",
     "start": "electron .",
     "test": "jest",
-    "css:build": "npx @tailwindcss/cli -i src/input.css -o assets/styles.css --minify",
-    "css:watch": "npx @tailwindcss/cli -i src/input.css -o assets/styles.css --watch"
+    "css:build": "npx @tailwindcss/cli -i src/renderer/css/input.css -o src/renderer/css/styles.css --minify",
+    "css:watch": "npx @tailwindcss/cli -i src/renderer/css/input.css -o src/renderer/css/styles.css --watch"
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.1",
+    "better-sqlite3": "^13.0.3",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
