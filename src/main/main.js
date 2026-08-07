@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-const { initDatabase, closeDatabase } = require("./db");
-const repo = require("./repository");
+const { initDatabase, closeDatabase } = require("./database/db");
+const repo = require("./database/repository");
 const path = require("path");
 
 let mainWindow;
@@ -12,13 +12,13 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "../preload/preload.js"),
       contextIsolation: true,
       nodeIntegration: false
     }
   });
-
-  mainWindow.loadFile("index.html");
+  console.log(__dirname);
+  mainWindow.loadFile("./src/renderer/index.html");
 
   // mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
 }

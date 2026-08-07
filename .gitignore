@@ -72,3 +72,6 @@ coverage/
 Dockerfile
 docker-compose.yaml
 .dockerignore
+
+# css extras
+styles.css
