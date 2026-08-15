@@ -27,14 +27,14 @@ function eliminarMoneda(id_moneda) {
 // PROYECTOS
 // =====================================================================
 
-function crearProyecto({ proyecto, precio_hora = null, id_moneda = null, observaciones = null }) {
+function crearProyecto({ nombre, precio_hora = null, id_moneda = null, observaciones = null }) {
   const db = getDb();
   const info = db
     .prepare(`
-      INSERT INTO Proyectos (proyecto, precio_hora, id_moneda, observaciones)
+      INSERT INTO Proyectos (nombre, precio_hora, id_moneda, observaciones)
       VALUES (?, ?, ?, ?)
     `)
-    .run(proyecto, precio_hora, id_moneda, observaciones);
+    .run(nombre, precio_hora, id_moneda, observaciones);
   return obtenerProyecto(info.lastInsertRowid);
 }
 
@@ -151,9 +151,10 @@ function iniciarSesion(id_actividad) {
     if (abierta) {
       throw new Error("Ya existe una sesión abierta para esta actividad.");
     }
-
+    // Changing from datetime('now', 'localtime') to strftime('%s', 'now')
+    // in order to have timestamp instead of datetime format
     const info = db
-      .prepare("INSERT INTO Sesiones (id_actividad, inicio) VALUES (?, datetime('now', 'localtime'))")
+      .prepare("INSERT INTO Sesiones (id_actividad, inicio) VALUES (?, strftime('%s', 'now'))")
       .run(id_actividad);
 
     db.prepare("UPDATE Actividades SET estado = 'En progreso' WHERE id_actividad = ?").run(id_actividad);
@@ -204,6 +205,11 @@ function pausarSesion(id_actividad) {
 // desde la UI representa una acción distinta (retomar vs empezar de cero).
 function reanudarSesion(id_actividad) {
   return iniciarSesion(id_actividad);
+}
+
+function finalizarSesion(id_sesion){
+  const db = getDb();
+  
 }
 
 function finalizarActividad(id_actividad) {
