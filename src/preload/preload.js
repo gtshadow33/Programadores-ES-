@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld("api", {
     crear: invocar("proyectos:crear"),
     listar: invocar("proyectos:listar"),
     obtener: invocar("proyectos:obtener"),
+    obtenerId: invocar("proyectos:obtenerId"),
     actualizar: invocar("proyectos:actualizar"),
     eliminar: invocar("proyectos:eliminar")
   },
@@ -37,6 +38,7 @@ contextBridge.exposeInMainWorld("api", {
     crear: invocar("actividades:crear"),
     listar: invocar("actividades:listar"),
     obtener: invocar("actividades:obtener"),
+    obtenerId: invocar("actividades:obtenerId"),
     actualizar: invocar("actividades:actualizar"),
     eliminar: invocar("actividades:eliminar")
   },

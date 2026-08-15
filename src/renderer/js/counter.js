@@ -1,10 +1,10 @@
-const counterButton = document.getElementById("counter");
+const startButton = document.getElementById("counter");
 const stopButton = document.getElementById("stop");
 const timerBox = document.getElementById("timer-box");
 const activityDetailsDiv = document.getElementById("activity-details-div");
 const activeActivityBox = document.getElementById("active-activity");
 const activeProjectBox = document.getElementById("active-project");
-import { DEFAULT_ACTIVITY, DEFAULT_PROJECT} from "./defaultValues";
+import { DEFAULT_ACTIVITY, DEFAULT_PROJECT} from "./defaultValues.js";
 
 let currentSession = {
     activityId: null,
@@ -62,95 +62,131 @@ function splitActivityDetails(activityDetails) {
     
 }   
 
-counterButton.addEventListener("click", async () => {
+startButton.addEventListener("click", async () => {
+    // verificar si existe una sesion corriendo
     if (currentSession.timerStamp != null){
         return
     }
-    
-    counterButton.disabled = true;
-    counterButton.hidden = true;
-    // block stopButton clicking
+
+    // Deshabilitar botones
+    startButton.disabled = true;
     stopButton.disabled = true;
-    stopButton.hidden = false;
-
-    const activityDetailsStr = document.getElementById("activity-details").value;
-    const session = splitActivityDetails(activityDetailsStr);
     
+    // Usado para hacer debug
+    // console.dir(window.api);
+
     try {
-        // Check if the project exists if not create a new project
-        const projectData = {
-            nombre: session.project,
-            precio_hora: DEFAULT_PROJECT.precio_hora,
-            id_moneda: DEFAULT_PROJECT.id_moneda,
+        const activityDetailsStr = document.getElementById("activity-details").value;
+        const session = splitActivityDetails(activityDetailsStr);
+        
+        // Revisar si el proyecto existe
+        let projectId = await window.api.proyectos.obtenerId(session.project);
+        
+        if (!projectId) {
+            const projectData = {
+                nombre: session.project,
+                precio_hora: DEFAULT_PROJECT.precio_hora,
+                id_moneda: DEFAULT_PROJECT.id_moneda,
+            }
+            projectId = await window.api.proyectos.crear(projectData)
         }
-        const project_id = await window.api.proyectos.crear(projectData)
+        
+        // Verificar si existe la actividad
+        let activityId = await window.api.actividades.obtenerId(projectId, session.activity);
 
-        const activityData = {
-            id_proyecto: project_id,
-            nombre: session.activity,
+        if (!activityId){
+            const activityData = {
+                id_proyecto: projectId,
+                nombre: session.activity,
+            }
+            activityId = await window.api.actividades.crear(activityData);
         }
 
-        const newActivity = await window.api.actividades.crearActividad(activityData);
+        // Crear nueva sesion en la base de datos
+        const newSessionId = await window.api.sesiones.iniciar(activityId)
 
-        const newSessionId = await window.api.sesiones.iniciarSesion(newActivity.id_actividad)
+        if (!newSessionId) {
+            throw new Error("No se pudo crear la sesion.")
+        }
 
-        currentSession.activityId = newActivity.id_actividad;
+        currentSession.activityId = activityId;
         currentSession.sessionId = newSessionId;
+        currentSession.startTime = Date.now();
+        currentSession.timerStamp = setInterval(updateTimer, 250);
+
+        activeActivityBox.hidden = false;
+        activeActivityBox.textContent = session.activity;
+
+        activeProjectBox.hidden = false;
+        activeProjectBox.textContent = session.project;
+
+        activityDetailsDiv.hidden = true;
+        startButton.hidden = true;
+        stopButton.hidden = false;
+
     } catch (error) {
-        console.error("Error al crear el proyecto:", error);
+        console.error("Error al crear el sesion:", error);
+        currentSession.activityId = null;
+        currentSession.sessionId = null;
+        currentSession.startTime = null;
+
+        if (currentSession.timerStamp != null) {
+            clearInterval(currentSession.timerStamp);
+            currentSession.timerStamp = null;
+        }
     } finally {
-        counterButton.disabled = false;
+        startButton.disabled = false;
         stopButton.disabled = false;
-    }7
-
-
+    }
     
-    console.dir(window.api);
-    
-    
-    
-    // include active-activity box to show and hide the actividad proyecto input box
-    activeActivityBox.hidden = false;
-    activeActivityBox.textContent = session.activity;
-
-    activeProjectBox.hidden = false;
-    activeProjectBox.textContent = session.project;
-
-    activityDetailsDiv.hidden = true;
-
-    currentSession.startTime = Date.now();
-
-    currentSession.timerStamp = setInterval(updateTimer, 250);
-
-})
+});
 
 stopButton.addEventListener("click", async () => {
-    
+    // Verificar que no haya sesion activa
     if (currentSession.timerStamp == null) {
         return;
     }
 
-    counterButton.hidden = false;
-    stopButton.hidden = true;
-    // include active-activity box to show and hide the actividad proyecto input box
-    activeActivityBox.hidden = true;
-    activeActivityBox.textContent = "";
+    startButton.disabled = true;
+    stopButton.disabled = true;
 
-    activeProjectBox.hidden = true;
-    activeProjectBox.textContent = "";
+    try {
+        if (currentSession.sessionId == null) {
+            throw new Error("No hay una sesion activa");
+        }
 
-    activityDetailsDiv.hidden = false;
+        const isSessionFinished = await window.api.sesiones.finalizar(currentSession.sessionId);
+        
+        if (!isSessionFinished) {
+            console.log("La sesion no se cerro correctamente");
+        }
 
-    // try {
-    //     // deterner session
+        clearInterval(currentSession.timerStamp);
+        currentSession.timerStamp = null;
 
-    // }
-    clearInterval(currentSession.timerStamp);
-    currentSession.timerStamp = null;
-    currentSession.elapsedTime = 0;
-    timerBox.textContent = "00:00";
-    
-    // Save activity in the database
-    // show last activities in the historial app as well
-    console.log("saving elapsed time in db")
-})
+        currentSession.elapsedTime = 0;
+        timerBox.textContent = "00:00";
+        
+        currentSession.sessionId = null;
+        currentSession.activityId = null;
+        currentSession.startTime = null;
+
+        startButton.hidden = false;
+        stopButton.hidden = true;
+
+        activeActivityBox.hidden = true;
+        activeActivityBox.textContent = "";
+
+        activeProjectBox.hidden = true;
+        activeProjectBox.textContent = "";
+
+        activityDetailsDiv.hidden = false;
+
+
+    } catch(error){
+        console.error("Error al cerrar la sesion", error);
+    } finally {
+        startButton.disabled = false;
+        stopButton.disabled = false;
+    }
+});

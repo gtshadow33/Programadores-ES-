@@ -35,6 +35,12 @@ app.whenReady().then(() => {
   });
 });
 
+
+app.on("before-quit", () => {
+  closeDatabase();
+});
+
+
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
@@ -69,6 +75,7 @@ registrarHandler("monedas:eliminar", repo.eliminarMoneda);
 registrarHandler("proyectos:crear", repo.crearProyecto);
 registrarHandler("proyectos:listar", repo.listarProyectos);
 registrarHandler("proyectos:obtener", repo.obtenerProyecto);
+registrarHandler("proyectos:obtenerId", repo.obtenerProyectoId);
 registrarHandler("proyectos:actualizar", repo.actualizarProyecto);
 registrarHandler("proyectos:eliminar", repo.eliminarProyecto);
 
@@ -76,6 +83,7 @@ registrarHandler("proyectos:eliminar", repo.eliminarProyecto);
 registrarHandler("actividades:crear", repo.crearActividad);
 registrarHandler("actividades:listar", repo.listarActividades);
 registrarHandler("actividades:obtener", repo.obtenerActividad);
+registrarHandler("actividades:obtenerId", repo.obtenerActividadId);
 registrarHandler("actividades:actualizar", repo.actualizarActividad);
 registrarHandler("actividades:eliminar", repo.eliminarActividad);
 
@@ -83,5 +91,6 @@ registrarHandler("actividades:eliminar", repo.eliminarActividad);
 registrarHandler("sesiones:iniciar", repo.iniciarSesion);
 registrarHandler("sesiones:pausar", repo.pausarSesion);
 registrarHandler("sesiones:reanudar", repo.reanudarSesion);
-registrarHandler("sesiones:finalizar", repo.finalizarActividad);
+registrarHandler("sesiones:finalizar", repo.finalizarSesion);
+// registrarHandler("sesiones:finalizar", repo.finalizarActividad);
 registrarHandler("sesiones:listar", repo.listarSesiones);
