@@ -142,7 +142,7 @@ startButton.addEventListener("click", async () => {
 });
 
 stopButton.addEventListener("click", async () => {
-    // Verificar que no haya sesion activa
+    // Verificar que haya sesion activa
     if (currentSession.timerStamp == null) {
         return;
     }
