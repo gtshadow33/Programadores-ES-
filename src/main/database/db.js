@@ -23,13 +23,13 @@ function initDatabase() {
     CREATE TABLE IF NOT EXISTS Monedas (
       id_moneda   INTEGER PRIMARY KEY AUTOINCREMENT,
       nombre      TEXT NOT NULL,
-      codigo      TEXT NOT NULL,
+      codigo      TEXT NOT NULL UNIQUE,
       simbolo     TEXT
     );
 
     CREATE TABLE IF NOT EXISTS Proyectos (
       id_proyecto     INTEGER PRIMARY KEY AUTOINCREMENT,
-      proyecto        TEXT NOT NULL,
+      nombre          TEXT NOT NULL,
       fecha_creacion  DATETIME DEFAULT CURRENT_TIMESTAMP,
       precio_hora     DECIMAL(10,2),
       id_moneda       INTEGER,
@@ -51,11 +51,13 @@ function initDatabase() {
     CREATE TABLE IF NOT EXISTS Sesiones (
       id_sesion           INTEGER PRIMARY KEY AUTOINCREMENT,
       id_actividad        INTEGER NOT NULL,
-      inicio              DATETIME NOT NULL,
-      fin                 DATETIME,
-      duracion_segundos   INTEGER,
+      inicio              INTEGER NOT NULL,
+      fin                 INTEGER,
       FOREIGN KEY (id_actividad) REFERENCES Actividades(id_actividad)
     );
+
+    INSERT OR IGNORE INTO Monedas (nombre, codigo, simbolo)
+    VALUES ('Euro', 'EUR', '€');
   `);
 
   return db;
