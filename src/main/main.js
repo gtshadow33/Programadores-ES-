@@ -20,7 +20,7 @@ function createWindow() {
   console.log(__dirname);
   mainWindow.loadFile("./src/renderer/index.html");
 
-  // mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
+  mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
 }
 
 app.whenReady().then(() => {
