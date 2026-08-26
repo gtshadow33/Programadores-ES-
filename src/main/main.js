@@ -17,10 +17,10 @@ function createWindow() {
       nodeIntegration: false
     }
   });
-  console.log(__dirname);
+  
   mainWindow.loadFile("./src/renderer/index.html");
 
-  mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
+  //mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
 }
 
 app.whenReady().then(() => {
@@ -82,6 +82,7 @@ registrarHandler("proyectos:eliminar", repo.eliminarProyecto);
 // Actividades
 registrarHandler("actividades:crear", repo.crearActividad);
 registrarHandler("actividades:listar", repo.listarActividades);
+registrarHandler("actividades:listarUltimas", repo.listarUltimasActividades);
 registrarHandler("actividades:obtener", repo.obtenerActividad);
 registrarHandler("actividades:obtenerId", repo.obtenerActividadId);
 registrarHandler("actividades:actualizar", repo.actualizarActividad);

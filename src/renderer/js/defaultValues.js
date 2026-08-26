@@ -9,3 +9,5 @@ export const DEFAULT_PROJECT = {
     id_moneda: 1,
     precio_hora: 10,
 };
+
+export const DEFAULT_HISTORIAL_NUMBER = 5;
