@@ -20,12 +20,11 @@ function createWindow() {
   
   mainWindow.loadFile("./src/renderer/index.html");
 
-  //mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
+  mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
 }
 
 app.whenReady().then(() => {
   initDatabase(); 
-  console.log("BBDD guardada en:", path.join(app.getPath("userData"), "control_horas.sqlite"));
   createWindow();
 
   app.on("activate", () => {
