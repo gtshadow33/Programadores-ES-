@@ -5,6 +5,7 @@ const activityDetailsDiv = document.getElementById("activity-details-div");
 const activeActivityBox = document.getElementById("active-activity");
 const activeProjectBox = document.getElementById("active-project");
 import { DEFAULT_ACTIVITY, DEFAULT_PROJECT} from "./defaultValues.js";
+import { getHistory } from "./historial.js";
 
 let currentSession = {
     activityId: null,
@@ -47,7 +48,6 @@ function splitActivityDetails(activityDetails) {
     }
     
     const lst = activityDetails.split(" @");
-    
     if (lst.length == 1){
         activity = lst[0];
         project = DEFAULT_PROJECT.nombre;
@@ -55,7 +55,7 @@ function splitActivityDetails(activityDetails) {
 
     if (lst.length > 1) {
         activity = lst[0];
-        project = lst[2];
+        project = lst[1];
     }
 
     return {activity, project}; 
@@ -182,6 +182,7 @@ stopButton.addEventListener("click", async () => {
 
         activityDetailsDiv.hidden = false;
 
+        await getHistory()
 
     } catch(error){
         console.error("Error al cerrar la sesion", error);
@@ -190,3 +191,5 @@ stopButton.addEventListener("click", async () => {
         stopButton.disabled = false;
     }
 });
+
+export { formatTime };

@@ -12,7 +12,6 @@
             font-sans text-white 
             flex justify-center 
             transition-colors duration-500 pb-12">
-
     <!-- Overlay del sidebar -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity duration-300"></div>
 
@@ -133,23 +132,36 @@
             <!-- Historial de actividades -->
             <div class="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg ">
                 <div class="p-4">
-                    <div class="mb-4 flex items-center justify-between">
-                        <h5 class="text-slate-800 text-lg font-semibold">
-                            Actividades recientes
-                        </h5>
-                    </div>
-                    <div class="divide-y divide-slate-200">
-                        <div class="flex items-center justify-between pb-3 pt-3 last:pb-0">
+
+                    <div id="activity-list">
+                        <div class="font-medium text-gray-800 mb-2">Hoy martes, 25 agosto 2026</div>
+                        <button class="group w-full border text-slate-600 rounded-lg flex items-center justify-between py-2 px-3 hover:bg-gray-300 transition-colors">
+                            <div class="flex flex-col justify-start items-start">
+                                <div class="text-slate-700 font-semibold group-hover:text-slate-950">
+                                    Refactorizacion
+                                </div>
+                                <div class="text-slate-500 text-sm">
+                                    @Proyecto A
+                                </div>
+                            </div>
+                            <div class="flex justify-center items-center gap-x-3">
+                                <span class="text-slate-600 text-2xl font-medium">
+                                    00:00:00
+                                </span>
+                                <svg class="size-8 group-hover:text-rose-500">
+                                    <use href="./assets/icons.svg#reload"></use>
+                                </svg>
+                            </div>
+                        </button>
+                        
+                        <div class="flex items-center justify-between p-3 last:pb-0">
                             <div class="flex items-center gap-x-3 text-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                    class="size-8">
-                                    <path fill-rule="evenodd"
-                                        d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
-                                        clip-rule="evenodd" />
+                                <svg class="size-8">
+                                    <use href="./assets/icons.svg#reload"></use>
                                 </svg>
                                 <div>
                                     <h6 class="text-slate-800 font-semibold">
-                                        Reactorizacion @ Proyecto A
+                                        Reactorizacion @ Proyecto svg
                                     </h6>
                                     <p class="text-slate-600 text-sm">
                                         4 horas 21 min
@@ -160,48 +172,7 @@
                                 $421
                             </h6>
                         </div>
-                        <div class="flex items-center justify-between pb-3 pt-3 last:pb-0">
-                            <div class="flex items-center gap-x-3 text-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                    class="size-8">
-                                    <path fill-rule="evenodd"
-                                        d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                <div>
-                                    <h6 class="text-slate-800 font-semibold">
-                                        Reactorizacion @ Proyecto A
-                                    </h6>
-                                    <p class="text-slate-600 text-sm">
-                                        4 horas 21 min
-                                    </p>
-                                </div>
-                            </div>
-                            <h6 class="text-slate-600 font-medium">
-                                $421
-                            </h6>
-                        </div>
-                        <div class="flex items-center justify-between pb-3 pt-3 last:pb-0">
-                            <div class="flex items-center gap-x-3 text-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                    class="size-8">
-                                    <path fill-rule="evenodd"
-                                        d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                <div>
-                                    <h6 class="text-slate-800 font-semibold">
-                                        Reactorizacion @ Proyecto A
-                                    </h6>
-                                    <p class="text-slate-600 text-sm">
-                                        4 horas 21 min
-                                    </p>
-                                </div>
-                            </div>
-                            <h6 class="text-slate-600 font-medium">
-                                $421
-                            </h6>
-                        </div>
+                        <hr class="border-t border-gray-300 my-1">
                     </div>
                 </div>
             </div>
@@ -237,6 +208,7 @@
     <script type="module" src="./js/renderer.js"></script>
     <script type="module" src="./js/counter.js"></script>
     <script type="module" src="./js/sidebar.js"></script>
+    <script type="module" src="./js/historial.js"></script>
 </body>
 
 </html>

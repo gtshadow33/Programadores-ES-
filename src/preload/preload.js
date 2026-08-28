@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld("api", {
   actividades: {
     crear: invocar("actividades:crear"),
     listar: invocar("actividades:listar"),
+    listarUltimas: invocar("actividades:listarUltimas"),
     obtener: invocar("actividades:obtener"),
     obtenerId: invocar("actividades:obtenerId"),
     actualizar: invocar("actividades:actualizar"),

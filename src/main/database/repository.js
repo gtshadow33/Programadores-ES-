@@ -124,6 +124,46 @@ function obtenerActividadId(id_proyecto, nombre) {
     return actividad ? actividad.id_actividad : null;
 }
 
+function listarUltimasActividades(n) {
+  const db = getDb();
+  const ultimasActividades = db.prepare(`
+    SELECT
+        a.id_actividad,
+        a.nombre AS actividad,
+        p.nombre AS proyecto,
+        s.fin AS fecha,
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN s.fin IS NOT NULL
+                    THEN s.fin - s.inicio
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS tiempo_total_segundos
+
+    FROM Actividades AS a
+
+    JOIN Proyectos AS p
+        ON p.id_proyecto = a.id_proyecto
+
+    LEFT JOIN Sesiones AS s
+        ON s.id_actividad = a.id_actividad
+
+    GROUP BY
+        a.id_actividad,
+        a.nombre,
+        p.nombre
+
+    ORDER BY MAX(s.fin) DESC
+    LIMIT ?;
+    `).all(n);
+
+    return ultimasActividades
+}
+
+
 function listarActividades(id_proyecto = null) {
   const db = getDb();
   if (id_proyecto) {
@@ -308,6 +348,7 @@ module.exports = {
   // Actividades
   crearActividad,
   listarActividades,
+  listarUltimasActividades,
   obtenerActividad,
   obtenerActividadId,
   actualizarActividad,
