@@ -60,7 +60,8 @@ function splitActivityDetails(activityDetails) {
 
     return {activity, project}; 
     
-}   
+}
+
 
 startButton.addEventListener("click", async () => {
     // verificar si existe una sesion corriendo
@@ -106,7 +107,8 @@ startButton.addEventListener("click", async () => {
         const newSessionId = await window.api.sesiones.iniciar(activityId)
 
         if (!newSessionId) {
-            throw new Error("No se pudo crear la sesion.")
+            console.log("No se pudo crear la sesion.")
+            return;
         }
 
         currentSession.activityId = activityId;
@@ -152,13 +154,15 @@ stopButton.addEventListener("click", async () => {
 
     try {
         if (currentSession.sessionId == null) {
-            throw new Error("No hay una sesion activa");
+            console.log("No hay una sesion activa.");
+            return;
         }
 
         const isSessionFinished = await window.api.sesiones.finalizar(currentSession.sessionId);
         
         if (!isSessionFinished) {
             console.log("La sesion no se cerro correctamente");
+            return;
         }
 
         clearInterval(currentSession.timerStamp);
@@ -192,4 +196,4 @@ stopButton.addEventListener("click", async () => {
     }
 });
 
-export { formatTime };
+export { formatTime, currentSession, updateTimer, timerBox };

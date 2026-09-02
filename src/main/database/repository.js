@@ -235,6 +235,23 @@ function finalizarSesion(id_sesion) {
   return result.changes > 0;
 }
 
+function obtenerDatosSesion(idSesion) {
+  const db = getDb();
+  const result = db.prepare(`
+        SELECT
+            a.nombre AS nombre_actividad,
+            p.nombre AS nombre_proyecto
+        FROM Sesiones AS s
+        INNER JOIN Actividades AS a
+            ON s.id_actividad = a.id_actividad
+        INNER JOIN Proyectos AS p
+            ON a.id_proyecto = p.id_proyecto
+        WHERE s.id_sesion = ?
+    `).get(idSesion);
+  
+  return result;
+}
+
 
 // Considerar esta funcion cuando se implemente un TODO list en la app
 // function iniciarSesion(id_actividad) {
@@ -355,6 +372,7 @@ module.exports = {
   eliminarActividad,
   // Sesiones
   iniciarSesion,
+  obtenerDatosSesion,
   pausarSesion,
   reanudarSesion,
   finalizarSesion,
