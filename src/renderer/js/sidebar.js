@@ -11,6 +11,7 @@ let projects = [
     { id: "p2", name: "Proyecto B" },
     { id: "p3", name: "Personal" },
 ];
+// let projects = [];
 
 let activeProjectId = projects[0]?.id ?? null;
 
