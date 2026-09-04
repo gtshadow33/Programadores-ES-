@@ -1,7 +1,52 @@
 import { DEFAULT_HISTORIAL_NUMBER } from "./defaultValues.js";
-import { formatTime } from "./counter.js";
+import { formatTime, currentSession, updateTimer } from "./counter.js";
 
 const activityList = document.getElementById("activity-list");
+const activeActivityBox = document.getElementById("active-activity");
+const activeProjectBox = document.getElementById("active-project");
+const activityDetailsDiv = document.getElementById("activity-details-div");
+
+async function restartActivity (activityId) {
+
+    if(currentSession.timerStamp != null){
+        return;
+    }
+
+    const newSessionId = await window.api.sesiones.iniciar(activityId);
+    
+    if (!newSessionId) {
+        console.log("No se pudo crear la sesión.");
+        return;
+    }
+
+    const data = await window.api.sesiones.obtenerDatos(newSessionId);
+    const startButton = document.getElementById("counter");
+    const stopButton = document.getElementById("stop");
+
+    // Deshabilitar botones
+    startButton.disabled = true;
+    stopButton.disabled = true;
+
+    currentSession.activityId = data.id_actividad;
+    currentSession.sessionId = newSessionId;
+    currentSession.startTime = Date.now();
+    currentSession.timerStamp = setInterval(updateTimer, 250);
+
+    activeActivityBox.hidden = false;
+    activeActivityBox.textContent = data.nombre_actividad;
+
+    activeProjectBox.hidden = false;
+    activeProjectBox.textContent = data.nombre_proyecto;
+
+    activityDetailsDiv.hidden = true;
+    startButton.hidden = true;
+    stopButton.hidden = false;
+
+    // Habilitar botones
+    startButton.disabled = false;
+    stopButton.disabled = false;
+
+}
 
 async function getLastActivities () {
     const numberRows = DEFAULT_HISTORIAL_NUMBER;
@@ -40,12 +85,16 @@ async function getLastActivities () {
     
 }
 
-const factoryActivity = (activity_str, project_str, time_str) => {
+const factoryActivity = (activity_id, activity_str, project_str, time_str) => {
     const SVG_NS = "http://www.w3.org/2000/svg";
 
-    const container = document.createElement("button");
-    container.className = "group w-full border text-slate-600 rounded-lg flex items-center justify-between py-2 px-3 hover:bg-gray-300 transition-colors mb-2";
-    
+    const container = document.createElement("div");
+    container.className = "group w-full border text-slate-600 rounded-lg flex items-center justify-between py-2 px-3 hover:bg-gray-300 transition-colors mb-2 cursor-pointer";
+    container.dataset.activityId = activity_id;
+    container.addEventListener("click", async (e) => {
+        const activityId = e.currentTarget.dataset.activityId;
+        await restartActivity(activityId);
+    })
     const leftSection = document.createElement("div");
     leftSection.className = "flex flex-col justify-start items-start";
 
@@ -88,7 +137,6 @@ const factoryActivity = (activity_str, project_str, time_str) => {
 
 }
 async function getHistory(){
-    const lst = document.getElementById("")
     const data = await getLastActivities();
     //clean activity list
     while(activityList.firstChild) {
@@ -103,7 +151,7 @@ async function getHistory(){
         const rows = data.groupedActivities[dayStr];
         for (const row of rows) {
             const formattedTime = formatTime(row.tiempo_total * 1000);
-            const elem = factoryActivity(row.activity, row.project, formattedTime);
+            const elem = factoryActivity(row.activityId, row.activity, row.project, formattedTime);
             activityList.append(elem);
         }
     }

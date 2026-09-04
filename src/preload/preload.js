@@ -52,7 +52,8 @@ contextBridge.exposeInMainWorld("api", {
     pausar: invocar("sesiones:pausar"),
     reanudar: invocar("sesiones:reanudar"),
     finalizar: invocar("sesiones:finalizar"),
-    listar: invocar("sesiones:listar")
+    listar: invocar("sesiones:listar"),
+    obtenerDatos: invocar("sesiones:obtenerDatos")
   }
 
 });
