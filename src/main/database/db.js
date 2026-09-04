@@ -5,11 +5,12 @@ const fs = require("fs");
 let db;
 
 /**
- * Inicializa la base de datos con todas las mejoras.
- * (No hay migraciones porque es desarrollo y no existen datos previos)
+ * Inicializa la base de datos.
+ * @param {string} [customPath] - Ruta opcional para la base de datos.
+ *                                Si no se proporciona, usa la ruta por defecto.
  */
-function initDatabase() {
-  const dbPath = path.join(__dirname, "../../programadores_es.db");
+function initDatabase(customPath) {
+  const dbPath = customPath || path.join(__dirname, "../../programadores_es.db");
   const isNew = !fs.existsSync(dbPath);
 
   db = new Database(dbPath);
@@ -20,7 +21,6 @@ function initDatabase() {
     console.log(" Creando base de datos con esquema mejorado...");
   }
 
-  // ─── Esquema completo con mejoras ────────────────────────────────────
   db.exec(`
     -- Monedas
     CREATE TABLE IF NOT EXISTS Monedas (

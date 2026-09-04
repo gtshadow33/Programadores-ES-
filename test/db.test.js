@@ -3,7 +3,9 @@ const path = require("path");
 const os = require("os");
 
 let tempDir;
+let dbPath;
 
+// Mock de electron (por si se usa en otro lado)
 jest.mock("electron", () => ({
   app: {
     getPath: () => global.__TEST_TEMP_DIR__
@@ -13,20 +15,21 @@ jest.mock("electron", () => ({
 const { initDatabase, closeDatabase } = require("../src/main/database/db.js");
 
 beforeEach(() => {
-  // Carpeta nueva y única en cada test, así nunca hay datos residuales
+  // Crear una carpeta temporal única para cada test
   tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "control-horas-test-"));
   global.__TEST_TEMP_DIR__ = tempDir;
+  // Cada test tendrá su propia base de datos en la carpeta temporal
+  dbPath = path.join(tempDir, "test.db");
 });
 
 afterEach(() => {
   closeDatabase();
-  // Borra la carpeta temporal entera después de cada test
   fs.rmSync(tempDir, { recursive: true, force: true });
 });
 
 describe("Base de datos - esquema", () => {
   test("crea las 4 tablas esperadas", () => {
-    const db = initDatabase();
+    const db = initDatabase(dbPath);
     const tablas = db
       .prepare("SELECT name FROM sqlite_master WHERE type='table'")
       .all()
@@ -38,41 +41,44 @@ describe("Base de datos - esquema", () => {
   });
 
   test("tiene las foreign keys activadas", () => {
-    const db = initDatabase();
+    const db = initDatabase(dbPath);
     const fk = db.pragma("foreign_keys", { simple: true });
     expect(fk).toBe(1);
   });
 
   test("volver a llamar initDatabase no destruye datos existentes", () => {
-    const db = initDatabase();
+    const db = initDatabase(dbPath);
+    // Insertar una moneda distinta a la por defecto (EUR)
     db.prepare("INSERT INTO Monedas (nombre, codigo, simbolo) VALUES (?, ?, ?)")
-      .run("Euro", "EUR", "€");
+      .run("Dólar", "USD", "$");
 
     // Simula reinicio de la app llamando initDatabase otra vez
-    // (misma carpeta temporal, mismo archivo .sqlite, porque no hemos cerrado el test)
-    const db2 = initDatabase();
+    // (misma ruta de base de datos)
+    const db2 = initDatabase(dbPath);
     const monedas = db2.prepare("SELECT * FROM Monedas").all();
 
-    expect(monedas.length).toBe(1);
-    expect(monedas[0].codigo).toBe("EUR");
+    // Debe haber 2 monedas: EUR (por defecto) y USD (insertada)
+    expect(monedas.length).toBe(2);
+    const usd = monedas.find(m => m.codigo === "USD");
+    expect(usd).toBeDefined();
   });
 });
 
 describe("Base de datos - relaciones e integridad", () => {
   test("un proyecto puede vincularse a una moneda existente", () => {
-    const db = initDatabase();
+    const db = initDatabase(dbPath);
 
     const moneda = db
       .prepare("INSERT INTO Monedas (nombre, codigo, simbolo) VALUES (?, ?, ?)")
       .run("Dólar", "USD", "$");
 
     const proyecto = db
-      .prepare("INSERT INTO Proyectos (proyecto, precio_hora, id_moneda) VALUES (?, ?, ?)")
+      .prepare("INSERT INTO Proyectos (nombre, precio_hora, id_moneda) VALUES (?, ?, ?)")
       .run("Web Cliente X", 30, moneda.lastInsertRowid);
 
     const row = db
       .prepare(`
-        SELECT p.proyecto, m.codigo
+        SELECT p.nombre, m.codigo
         FROM Proyectos p
         JOIN Monedas m ON p.id_moneda = m.id_moneda
         WHERE p.id_proyecto = ?
@@ -83,7 +89,7 @@ describe("Base de datos - relaciones e integridad", () => {
   });
 
   test("rechaza un id_proyecto inexistente al crear una actividad (FK)", () => {
-    const db = initDatabase();
+    const db = initDatabase(dbPath);
 
     expect(() => {
       db.prepare(`
@@ -94,10 +100,10 @@ describe("Base de datos - relaciones e integridad", () => {
   });
 
   test("rechaza un estado no válido en Actividades (CHECK constraint)", () => {
-    const db = initDatabase();
+    const db = initDatabase(dbPath);
 
     const proyecto = db
-      .prepare("INSERT INTO Proyectos (proyecto, precio_hora) VALUES (?, ?)")
+      .prepare("INSERT INTO Proyectos (nombre, precio_hora) VALUES (?, ?)")
       .run("Proyecto Y", 20);
 
     expect(() => {
@@ -109,10 +115,10 @@ describe("Base de datos - relaciones e integridad", () => {
   });
 
   test("una actividad nueva empieza en estado Pendiente por defecto", () => {
-    const db = initDatabase();
+    const db = initDatabase(dbPath);
 
     const proyecto = db
-      .prepare("INSERT INTO Proyectos (proyecto, precio_hora) VALUES (?, ?)")
+      .prepare("INSERT INTO Proyectos (nombre, precio_hora) VALUES (?, ?)")
       .run("Proyecto Z", 15);
 
     const actividad = db
@@ -133,10 +139,10 @@ describe("Base de datos - lógica de sesiones (iniciar/pausar/reanudar/finalizar
   let db;
 
   beforeEach(() => {
-    db = initDatabase();
+    db = initDatabase(dbPath);
 
     const proyecto = db
-      .prepare("INSERT INTO Proyectos (proyecto, precio_hora) VALUES (?, ?)")
+      .prepare("INSERT INTO Proyectos (nombre, precio_hora) VALUES (?, ?)")
       .run("Proyecto Sesiones", 40);
 
     const actividad = db
