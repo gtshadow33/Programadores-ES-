@@ -47,15 +47,15 @@ function splitActivityDetails(activityDetails) {
         return {activity, project};
     }
     
-    const lst = activityDetails.split(" @");
+    const lst = activityDetails.split("@");
     if (lst.length == 1){
-        activity = lst[0];
+        activity = lst[0].trim();
         project = DEFAULT_PROJECT.nombre;
     }
 
     if (lst.length > 1) {
-        activity = lst[0];
-        project = lst[1];
+        activity = lst[0].trim();
+        project = lst[1].trim();
     }
 
     return {activity, project}; 

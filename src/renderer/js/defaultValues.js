@@ -10,4 +10,4 @@ export const DEFAULT_PROJECT = {
     precio_hora: 10,
 };
 
-export const DEFAULT_HISTORIAL_NUMBER = 5;
+export const DEFAULT_HISTORIAL_NUMBER = 10;
