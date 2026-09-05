@@ -349,6 +349,25 @@ function listarSesiones(id_actividad) {
     .prepare("SELECT * FROM Sesiones WHERE id_actividad = ? ORDER BY id_sesion")
     .all(id_actividad);
 }
+function buscarActividades(texto, limite = 10) {
+  const db = getDb();
+  const query = `
+    SELECT
+      a.id_actividad,
+      a.nombre AS actividad,
+      p.nombre AS proyecto,
+      MAX(s.fin) AS ultima_sesion
+    FROM Actividades a
+    JOIN Proyectos p ON p.id_proyecto = a.id_proyecto
+    LEFT JOIN Sesiones s ON s.id_actividad = a.id_actividad
+    WHERE a.nombre LIKE ? OR p.nombre LIKE ?
+    GROUP BY a.id_actividad, a.nombre, p.nombre
+    ORDER BY ultima_sesion DESC, a.nombre ASC
+    LIMIT ?
+  `;
+  const like = `%${texto}%`;
+  return db.prepare(query).all(like, like, limite);
+}
 
 module.exports = {
   // Monedas
@@ -370,6 +389,7 @@ module.exports = {
   obtenerActividadId,
   actualizarActividad,
   eliminarActividad,
+  buscarActividades,
   // Sesiones
   iniciarSesion,
   obtenerDatosSesion,

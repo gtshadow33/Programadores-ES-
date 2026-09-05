@@ -7,6 +7,93 @@ const activeProjectBox = document.getElementById("active-project");
 import { DEFAULT_ACTIVITY, DEFAULT_PROJECT} from "./defaultValues.js";
 import { getHistory } from "./historial.js";
 
+// ============ AUTOCMPLETADO ============
+const activityInput = document.getElementById("activity-details");
+const suggestionBox = document.getElementById("suggestion-box");
+let suggestions = [];
+let selectedIndex = -1;
+
+async function fetchSuggestions(text) {
+  if (text.trim().length < 2) {
+    hideSuggestions();
+    return;
+  }
+  try {
+    const results = await window.api.actividades.buscar(text);
+    suggestions = results;
+    if (suggestions.length > 0) {
+      renderSuggestions();
+      selectedIndex = -1;
+    } else {
+      hideSuggestions();
+    }
+  } catch (error) {
+    console.error("Error al buscar sugerencias:", error);
+  }
+}
+
+function renderSuggestions() {
+  suggestionBox.innerHTML = "";
+  suggestions.forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = "px-3 py-2 cursor-pointer hover:bg-slate-100 text-slate-700";
+    if (idx === selectedIndex) {
+      div.classList.add("bg-slate-200");
+    }
+    div.textContent = `${item.actividad} @ ${item.proyecto}`;
+    div.addEventListener("click", () => selectSuggestion(idx));
+    suggestionBox.appendChild(div);
+  });
+  suggestionBox.classList.remove("hidden");
+}
+
+function hideSuggestions() {
+  suggestionBox.classList.add("hidden");
+  suggestions = [];
+  selectedIndex = -1;
+}
+
+function selectSuggestion(index) {
+  const item = suggestions[index];
+  if (!item) return;
+  activityInput.value = `${item.actividad} @ ${item.proyecto}`;
+  hideSuggestions();
+}
+
+// Eventos del input
+activityInput.addEventListener("input", (e) => {
+  fetchSuggestions(e.target.value);
+});
+
+activityInput.addEventListener("keydown", (e) => {
+  if (suggestionBox.classList.contains("hidden")) return;
+
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
+    renderSuggestions();
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    selectedIndex = Math.max(selectedIndex - 1, 0);
+    renderSuggestions();
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (selectedIndex >= 0) {
+      selectSuggestion(selectedIndex);
+    }
+  } else if (e.key === "Escape") {
+    hideSuggestions();
+  }
+});
+
+// Ocultar al hacer clic fuera
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#activity-details-div")) {
+    hideSuggestions();
+  }
+});
+// ============ FIN AUTOCMPLETADO ============
+
 let currentSession = {
     activityId: null,
     sessionId: null,

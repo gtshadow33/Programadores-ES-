@@ -86,6 +86,7 @@ registrarHandler("actividades:obtener", repo.obtenerActividad);
 registrarHandler("actividades:obtenerId", repo.obtenerActividadId);
 registrarHandler("actividades:actualizar", repo.actualizarActividad);
 registrarHandler("actividades:eliminar", repo.eliminarActividad);
+registrarHandler("actividades:buscar", repo.buscarActividades);
 
 // Sesiones (cronómetro)
 registrarHandler("sesiones:iniciar", repo.iniciarSesion);
