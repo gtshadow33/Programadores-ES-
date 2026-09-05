@@ -13,14 +13,45 @@ const suggestionBox = document.getElementById("suggestion-box");
 let suggestions = [];
 let selectedIndex = -1;
 
+//  Parsear input para separar por @
+function parseSearchInput(texto) {
+  if (!texto.includes("@")) {
+    return { actividad: texto.trim() || null, proyecto: null };
+  }
+  
+  const partes = texto.split("@");
+  return {
+    actividad: partes[0].trim() || null,
+    proyecto: partes[1]?.trim() || null
+  };
+}
+
+//  MODIFICADO: Ahora envía objeto con actividad y proyecto separados
 async function fetchSuggestions(text) {
   if (text.trim().length < 2) {
     hideSuggestions();
     return;
   }
+  
   try {
-    const results = await window.api.actividades.buscar(text);
+    // Parsear input para separar por @
+    const { actividad, proyecto } = parseSearchInput(text);
+    
+    // Si no hay búsqueda válida, no buscar
+    if (!actividad && !proyecto) {
+      hideSuggestions();
+      return;
+    }
+    
+    // Enviar ambos parámetros al backend
+    const results = await window.api.actividades.buscar({
+      actividad: actividad || '',
+      proyecto: proyecto || '',
+      texto: text
+    });
+    
     suggestions = results;
+    
     if (suggestions.length > 0) {
       renderSuggestions();
       selectedIndex = -1;
@@ -100,7 +131,6 @@ let currentSession = {
     timerStamp: null,
     startTime: null,
     elapsedTime: 0,
-
 }
 
 function formatTime(milliseconds) {
@@ -146,9 +176,7 @@ function splitActivityDetails(activityDetails) {
     }
 
     return {activity, project}; 
-    
 }
-
 
 startButton.addEventListener("click", async () => {
     // verificar si existe una sesion corriendo
@@ -159,9 +187,6 @@ startButton.addEventListener("click", async () => {
     // Deshabilitar botones
     startButton.disabled = true;
     stopButton.disabled = true;
-    
-    // Usado para hacer debug
-    // console.dir(window.api);
 
     try {
         const activityDetailsStr = document.getElementById("activity-details").value;
@@ -227,7 +252,6 @@ startButton.addEventListener("click", async () => {
         startButton.disabled = false;
         stopButton.disabled = false;
     }
-    
 });
 
 stopButton.addEventListener("click", async () => {
@@ -277,6 +301,21 @@ stopButton.addEventListener("click", async () => {
 
     } catch(error){
         console.error("Error al cerrar la sesion", error);
+        // Limpiar estado aunque falle
+        clearInterval(currentSession.timerStamp);
+        currentSession.timerStamp = null;
+        currentSession.elapsedTime = 0;
+        timerBox.textContent = "00:00";
+        currentSession.sessionId = null;
+        currentSession.activityId = null;
+        currentSession.startTime = null;
+        
+        // Restaurar UI
+        startButton.hidden = false;
+        stopButton.hidden = true;
+        activeActivityBox.hidden = true;
+        activeProjectBox.hidden = true;
+        activityDetailsDiv.hidden = false;
     } finally {
         startButton.disabled = false;
         stopButton.disabled = false;

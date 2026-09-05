@@ -63,7 +63,7 @@ async function getLastActivities () {
         const myDate = new Date(elem.fecha * 1000);
         const day = myDate.getDay().toString();
         const year = myDate.getFullYear().toString();
-        const month = myDate.getMonth().toString();
+        const month = (myDate.getMonth()+1).toString();
         const weekDay = myDate.toLocaleDateString('es-ES', { weekday: 'long'});
 
         const date_str = weekDay+", "+day.padStart(2,"0")+"-"+month.padStart(2,"0")+"-"+year;
@@ -138,6 +138,7 @@ const factoryActivity = (activity_id, activity_str, project_str, time_str) => {
 }
 async function getHistory(){
     const data = await getLastActivities();
+    if (!data) return;
     //clean activity list
     while(activityList.firstChild) {
         activityList.removeChild(activityList.lastChild);
