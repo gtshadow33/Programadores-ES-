@@ -41,7 +41,9 @@ contextBridge.exposeInMainWorld("api", {
     obtener: invocar("actividades:obtener"),
     obtenerId: invocar("actividades:obtenerId"),
     actualizar: invocar("actividades:actualizar"),
-    eliminar: invocar("actividades:eliminar")
+    eliminar: invocar("actividades:eliminar"),
+    //  Nueva línea para búsqueda de sugerencias
+    buscar: invocar("actividades:buscar")
   },
 
   // ------------------------------------------------------------------

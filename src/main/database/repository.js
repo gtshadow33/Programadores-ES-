@@ -163,7 +163,6 @@ function listarUltimasActividades(n) {
     return ultimasActividades
 }
 
-
 function listarActividades(id_proyecto = null) {
   const db = getDb();
   if (id_proyecto) {
@@ -211,7 +210,7 @@ function sesionAbierta(id_actividad) {
 }
 
 function iniciarSesion(id_actividad) {
-  const db  = getDb();
+  const db = getDb();
   const result = db
     .prepare(`
       INSERT INTO Sesiones (id_actividad, inicio)
@@ -252,30 +251,6 @@ function obtenerDatosSesion(idSesion) {
   return result;
 }
 
-
-// Considerar esta funcion cuando se implemente un TODO list en la app
-// function iniciarSesion(id_actividad) {
-//   const db = getDb();
-
-//   const ejecutar = db.transaction(() => {
-//     const abierta = sesionAbierta(id_actividad);
-//     if (abierta) {
-//       throw new Error("Ya existe una sesión abierta para esta actividad.");
-//     }
-//     // Changing from datetime('now', 'localtime') to strftime('%s', 'now')
-//     // in order to have timestamp instead of datetime format
-//     const info = db
-//       .prepare("INSERT INTO Sesiones (id_actividad, inicio) VALUES (?, strftime('%s', 'now'))")
-//       .run(id_actividad);chro
-
-//     db.prepare("UPDATE Actividades SET estado = 'En progreso' WHERE id_actividad = ?").run(id_actividad);
-
-//     return db.prepare("SELECT * FROM Sesiones WHERE id_sesion = ?").get(info.lastInsertRowid);
-//   });
-
-//   return ejecutar();
-// }
-
 function pausarSesion(id_actividad) {
   const db = getDb();
 
@@ -311,9 +286,6 @@ function pausarSesion(id_actividad) {
   return ejecutar();
 }
 
-// Reanudar es semánticamente idéntico a iniciar: abre una sesión nueva
-// e independiente de las anteriores. Se expone con nombre propio porque
-// desde la UI representa una acción distinta (retomar vs empezar de cero).
 function reanudarSesion(id_actividad) {
   return iniciarSesion(id_actividad);
 }
@@ -350,6 +322,78 @@ function listarSesiones(id_actividad) {
     .all(id_actividad);
 }
 
+// =====================================================================
+// BÚSQUEDA DE ACTIVIDADES (NUEVA FUNCIÓN)
+// =====================================================================
+
+function buscarActividades({ actividad = null, proyecto = null }, limite = 10) {
+  const db = getDb();  //  AGREGADO: Obtener la conexión a la base de datos
+  
+  // Si no hay búsqueda válida, retornar vacío
+  if (!actividad && !proyecto) {
+    return [];
+  }
+  
+  // Construir patrones LIKE
+  const likeActividad = actividad ? `%${actividad.toLowerCase()}%` : null;
+  const likeProyecto = proyecto ? `%${proyecto.toLowerCase()}%` : null;
+  
+  // Base de la consulta
+  let query = `
+    SELECT
+      a.id_actividad,
+      a.nombre AS actividad,
+      p.nombre AS proyecto,
+      MAX(s.fin) AS ultima_sesion
+    FROM Actividades a
+    JOIN Proyectos p ON p.id_proyecto = a.id_proyecto
+    LEFT JOIN Sesiones s ON s.id_actividad = a.id_actividad
+    WHERE 1=1
+  `;
+  
+  const params = [];
+  
+  // Condiciones según los parámetros recibidos
+  if (actividad && proyecto) {
+    // Caso: actividad@proyecto → buscar en AMBOS
+    query += ` AND LOWER(a.nombre) LIKE ? AND LOWER(p.nombre) LIKE ?`;
+    params.push(likeActividad, likeProyecto);
+  } else if (actividad) {
+    // Caso: solo actividad → buscar en actividad O proyecto
+    query += ` AND (LOWER(a.nombre) LIKE ? OR LOWER(p.nombre) LIKE ?)`;
+    params.push(likeActividad, likeActividad);
+  } else if (proyecto) {
+    // Caso: solo proyecto → buscar en proyecto
+    query += ` AND LOWER(p.nombre) LIKE ?`;
+    params.push(likeProyecto);
+  }
+  
+  // GROUP BY y ORDER BY
+  query += `
+    GROUP BY a.id_actividad, a.nombre, p.nombre
+    ORDER BY 
+      CASE 
+        WHEN LOWER(a.nombre) LIKE ? THEN 0
+        WHEN LOWER(p.nombre) LIKE ? THEN 1
+        ELSE 2
+      END,
+      ultima_sesion DESC,
+      a.nombre ASC
+    LIMIT ?
+  `;
+  
+  // Parámetros para ORDER BY
+  params.push(likeActividad || '%%', likeProyecto || '%%');
+  params.push(limite);
+  
+  //  AHORA db está definida gracias a getDb()
+  return db.prepare(query).all(...params);
+}
+
+// =====================================================================
+// EXPORTACIONES
+// =====================================================================
+
 module.exports = {
   // Monedas
   crearMoneda,
@@ -370,6 +414,7 @@ module.exports = {
   obtenerActividadId,
   actualizarActividad,
   eliminarActividad,
+  buscarActividades,
   // Sesiones
   iniciarSesion,
   obtenerDatosSesion,

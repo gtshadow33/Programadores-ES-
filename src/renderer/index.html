@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -138,8 +137,7 @@
                 Proyecto
             </div>
 
-            <div id="activity-details-div"
-                class="mb-5 w-75">
+            <div id="activity-details-div" class="relative mb-5 w-75">
 
                 <input id="activity-details"
                     class="w-full bg-white text-lg
@@ -150,6 +148,10 @@
                     focus:outline-none focus:border-slate-400 
                     hover:border-slate-300 shadow-sm focus:shadow"
                     placeholder="Actividad @Proyecto">
+
+                <!-- Contenedor de sugerencias -->
+                <div id="suggestion-box"
+                    class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-md shadow-lg mt-1 z-50 hidden max-h-60 overflow-y-auto"></div>
 
             </div>
 
@@ -299,4 +301,3 @@
 </body>
 
 </html>
-
