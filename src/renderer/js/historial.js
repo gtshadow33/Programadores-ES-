@@ -61,7 +61,7 @@ async function getLastActivities () {
     
     for (const elem of lastActivities){
         const myDate = new Date(elem.fecha * 1000);
-        const day = myDate.getDay().toString();
+        const day = myDate.getDate().toString();
         const year = myDate.getFullYear().toString();
         const month = (myDate.getMonth()+1).toString();
         const weekDay = myDate.toLocaleDateString('es-ES', { weekday: 'long'});
