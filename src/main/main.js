@@ -96,3 +96,5 @@ registrarHandler("sesiones:reanudar", repo.reanudarSesion);
 registrarHandler("sesiones:finalizar", repo.finalizarSesion);
 // registrarHandler("sesiones:finalizar", repo.finalizarActividad);
 registrarHandler("sesiones:listar", repo.listarSesiones);
+//exportar
+registrarHandler("exportar:datos", repo.exportarDatos);

@@ -47,7 +47,6 @@ function obtenerProyectoId(nombre){
       WHERE nombre = ?
       `)
       .get(nombre);
-  
   return project ? project.id_proyecto : null;
 }
 
@@ -120,8 +119,7 @@ function obtenerActividadId(id_proyecto, nombre) {
         AND  nombre = ?
     `)
     .get(id_proyecto, nombre);
-  
-    return actividad ? actividad.id_actividad : null;
+  return actividad ? actividad.id_actividad : null;
 }
 
 function listarUltimasActividades(n) {
@@ -142,25 +140,19 @@ function listarUltimasActividades(n) {
             ),
             0
         ) AS tiempo_total_segundos
-
     FROM Actividades AS a
-
     JOIN Proyectos AS p
         ON p.id_proyecto = a.id_proyecto
-
     LEFT JOIN Sesiones AS s
         ON s.id_actividad = a.id_actividad
-
     GROUP BY
         a.id_actividad,
         a.nombre,
         p.nombre
-
     ORDER BY MAX(s.fin) DESC
     LIMIT ?;
     `).all(n);
-
-    return ultimasActividades
+  return ultimasActividades;
 }
 
 function listarActividades(id_proyecto = null) {
@@ -199,7 +191,7 @@ function eliminarActividad(id_actividad) {
 }
 
 // =====================================================================
-// SESIONES (control del cronómetro)
+// SESIONES (control del cronómetro) - CORREGIDO DEFINITIVO
 // =====================================================================
 
 function sesionAbierta(id_actividad) {
@@ -211,26 +203,29 @@ function sesionAbierta(id_actividad) {
 
 function iniciarSesion(id_actividad) {
   const db = getDb();
+  const ahora = Math.floor(Date.now() / 1000);
   const result = db
     .prepare(`
       INSERT INTO Sesiones (id_actividad, inicio)
-      VALUES (?, strftime('%s', 'now'))
+      VALUES (?, ?)
     `)
-    .run(id_actividad);
-  
+    .run(id_actividad, ahora);
   return result.lastInsertRowid;
 }
 
 function finalizarSesion(id_sesion) {
   const db = getDb();
+  const sesion = db.prepare("SELECT * FROM Sesiones WHERE id_sesion = ? AND fin IS NULL").get(id_sesion);
+  if (!sesion) return false;
+  const ahora = Math.floor(Date.now() / 1000);
+  const duracion = ahora - sesion.inicio;
   const result = db
     .prepare(`
       UPDATE Sesiones 
-      SET 
-        fin = strftime('%s', 'now') 
-      WHERE id_sesion = ? AND fin IS NULL
-      `)
-    .run(id_sesion);
+      SET fin = ?, duracion_segundos = ?
+      WHERE id_sesion = ?
+    `)
+    .run(ahora, duracion, id_sesion);
   return result.changes > 0;
 }
 
@@ -247,42 +242,36 @@ function obtenerDatosSesion(idSesion) {
             ON a.id_proyecto = p.id_proyecto
         WHERE s.id_sesion = ?
     `).get(idSesion);
-  
   return result;
 }
 
 function pausarSesion(id_actividad) {
   const db = getDb();
-
   const ejecutar = db.transaction(() => {
     const sesion = sesionAbierta(id_actividad);
     if (!sesion) {
       throw new Error("No hay ninguna sesión abierta para esta actividad.");
     }
 
+    const ahora = Math.floor(Date.now() / 1000);
+    const duracion = ahora - sesion.inicio;
+
     db.prepare(`
       UPDATE Sesiones
-      SET fin = datetime('now', 'localtime'),
-          duracion_segundos = CAST(
-            (julianday(datetime('now', 'localtime')) - julianday(inicio)) * 86400 AS INTEGER
-          )
+      SET fin = ?, duracion_segundos = ?
       WHERE id_sesion = ?
-    `).run(sesion.id_sesion);
+    `).run(ahora, duracion, sesion.id_sesion);
 
-    const sesionCerrada = db
-      .prepare("SELECT * FROM Sesiones WHERE id_sesion = ?")
-      .get(sesion.id_sesion);
-
+    // Actualizar el tiempo total de la actividad
     db.prepare(`
       UPDATE Actividades
       SET estado = 'Pausada',
           tiempo_total_segundos = tiempo_total_segundos + ?
       WHERE id_actividad = ?
-    `).run(sesionCerrada.duracion_segundos, id_actividad);
+    `).run(duracion, id_actividad);
 
-    return sesionCerrada;
+    return obtenerActividad(id_actividad);
   });
-
   return ejecutar();
 }
 
@@ -292,26 +281,21 @@ function reanudarSesion(id_actividad) {
 
 function finalizarActividad(id_actividad) {
   const db = getDb();
-
   const ejecutar = db.transaction(() => {
     const abierta = sesionAbierta(id_actividad);
     if (abierta) {
       pausarSesion(id_actividad);
     }
-
     const total = db
       .prepare("SELECT COALESCE(SUM(duracion_segundos), 0) AS total FROM Sesiones WHERE id_actividad = ?")
       .get(id_actividad).total;
-
     db.prepare(`
       UPDATE Actividades
       SET estado = 'Finalizada', tiempo_total_segundos = ?
       WHERE id_actividad = ?
     `).run(total, id_actividad);
-
     return obtenerActividad(id_actividad);
   });
-
   return ejecutar();
 }
 
@@ -323,22 +307,16 @@ function listarSesiones(id_actividad) {
 }
 
 // =====================================================================
-// BÚSQUEDA DE ACTIVIDADES (NUEVA FUNCIÓN)
+// BÚSQUEDA DE ACTIVIDADES
 // =====================================================================
 
 function buscarActividades({ actividad = null, proyecto = null }, limite = 10) {
-  const db = getDb();  //  AGREGADO: Obtener la conexión a la base de datos
-  
-  // Si no hay búsqueda válida, retornar vacío
+  const db = getDb();
   if (!actividad && !proyecto) {
     return [];
   }
-  
-  // Construir patrones LIKE
   const likeActividad = actividad ? `%${actividad.toLowerCase()}%` : null;
   const likeProyecto = proyecto ? `%${proyecto.toLowerCase()}%` : null;
-  
-  // Base de la consulta
   let query = `
     SELECT
       a.id_actividad,
@@ -350,25 +328,17 @@ function buscarActividades({ actividad = null, proyecto = null }, limite = 10) {
     LEFT JOIN Sesiones s ON s.id_actividad = a.id_actividad
     WHERE 1=1
   `;
-  
   const params = [];
-  
-  // Condiciones según los parámetros recibidos
   if (actividad && proyecto) {
-    // Caso: actividad@proyecto → buscar en AMBOS
     query += ` AND LOWER(a.nombre) LIKE ? AND LOWER(p.nombre) LIKE ?`;
     params.push(likeActividad, likeProyecto);
   } else if (actividad) {
-    // Caso: solo actividad → buscar en actividad O proyecto
     query += ` AND (LOWER(a.nombre) LIKE ? OR LOWER(p.nombre) LIKE ?)`;
     params.push(likeActividad, likeActividad);
   } else if (proyecto) {
-    // Caso: solo proyecto → buscar en proyecto
     query += ` AND LOWER(p.nombre) LIKE ?`;
     params.push(likeProyecto);
   }
-  
-  // GROUP BY y ORDER BY
   query += `
     GROUP BY a.id_actividad, a.nombre, p.nombre
     ORDER BY 
@@ -381,13 +351,18 @@ function buscarActividades({ actividad = null, proyecto = null }, limite = 10) {
       a.nombre ASC
     LIMIT ?
   `;
-  
-  // Parámetros para ORDER BY
   params.push(likeActividad || '%%', likeProyecto || '%%');
   params.push(limite);
-  
-  //  AHORA db está definida gracias a getDb()
   return db.prepare(query).all(...params);
+}
+
+// =====================================================================
+// EXPORTACIÓN (consulta la vista)
+// =====================================================================
+
+function exportarDatos() {
+  const db = getDb();
+  return db.prepare("SELECT * FROM v_exportacion").all();
 }
 
 // =====================================================================
@@ -422,5 +397,7 @@ module.exports = {
   reanudarSesion,
   finalizarSesion,
   finalizarActividad,
-  listarSesiones
+  listarSesiones,
+  // Exportación
+  exportarDatos
 };

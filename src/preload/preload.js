@@ -56,6 +56,13 @@ contextBridge.exposeInMainWorld("api", {
     finalizar: invocar("sesiones:finalizar"),
     listar: invocar("sesiones:listar"),
     obtenerDatos: invocar("sesiones:obtenerDatos")
+  },
+
+  // ------------------------------------------------------------------
+  // Exportar
+  // ------------------------------------------------------------------
+  exportar: {
+    datos: invocar("exportar:datos")
   }
 
 });
