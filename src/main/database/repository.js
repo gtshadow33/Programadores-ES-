@@ -38,15 +38,15 @@ function crearProyecto({ nombre, precio_hora = null, id_moneda = null, observaci
   return info.lastInsertRowid;
 }
 
-function obtenerProyectoId(nombre){
+function obtenerProyectoId(nombre) {
   const db = getDb();
   const project = db
     .prepare(`
       SELECT id_proyecto
       FROM Proyectos
       WHERE nombre = ?
-      `)
-      .get(nombre);
+    `)
+    .get(nombre);
   return project ? project.id_proyecto : null;
 }
 
@@ -76,7 +76,8 @@ function obtenerProyecto(id_proyecto) {
 
 function actualizarProyecto(id_proyecto, campos) {
   const db = getDb();
-  const permitidos = ["proyecto", "precio_hora", "id_moneda", "observaciones"];
+  // CORREGIDO: el campo se llama "nombre", no "proyecto"
+  const permitidos = ["nombre", "precio_hora", "id_moneda", "observaciones"];
   const claves = Object.keys(campos).filter((k) => permitidos.includes(k));
 
   if (claves.length === 0) return obtenerProyecto(id_proyecto);
@@ -116,7 +117,7 @@ function obtenerActividadId(id_proyecto, nombre) {
       SELECT id_actividad 
       FROM Actividades
       WHERE id_proyecto = ? 
-        AND  nombre = ?
+        AND nombre = ?
     `)
     .get(id_proyecto, nombre);
   return actividad ? actividad.id_actividad : null;
@@ -151,7 +152,7 @@ function listarUltimasActividades(n) {
         p.nombre
     ORDER BY MAX(s.fin) DESC
     LIMIT ?;
-    `).all(n);
+  `).all(n);
   return ultimasActividades;
 }
 
@@ -232,68 +233,70 @@ function finalizarSesion(id_sesion) {
 function obtenerDatosSesion(idSesion) {
   const db = getDb();
   const result = db.prepare(`
-        SELECT
-            a.nombre AS nombre_actividad,
-            p.nombre AS nombre_proyecto
-        FROM Sesiones AS s
-        INNER JOIN Actividades AS a
-            ON s.id_actividad = a.id_actividad
-        INNER JOIN Proyectos AS p
-            ON a.id_proyecto = p.id_proyecto
-        WHERE s.id_sesion = ?
-    `).get(idSesion);
+    SELECT
+        a.nombre AS nombre_actividad,
+        p.nombre AS nombre_proyecto
+    FROM Sesiones AS s
+    INNER JOIN Actividades AS a
+        ON s.id_actividad = a.id_actividad
+    INNER JOIN Proyectos AS p
+        ON a.id_proyecto = p.id_proyecto
+    WHERE s.id_sesion = ?
+  `).get(idSesion);
   return result;
 }
 
+// pausarSesion: ahora SIN transacción, solo actualiza las tablas
 function pausarSesion(id_actividad) {
   const db = getDb();
-  const ejecutar = db.transaction(() => {
-    const sesion = sesionAbierta(id_actividad);
-    if (!sesion) {
-      throw new Error("No hay ninguna sesión abierta para esta actividad.");
-    }
 
-    const ahora = Math.floor(Date.now() / 1000);
-    const duracion = ahora - sesion.inicio;
+  const sesion = sesionAbierta(id_actividad);
+  if (!sesion) {
+    throw new Error("No hay ninguna sesión abierta para esta actividad.");
+  }
 
-    db.prepare(`
-      UPDATE Sesiones
-      SET fin = ?, duracion_segundos = ?
-      WHERE id_sesion = ?
-    `).run(ahora, duracion, sesion.id_sesion);
+  const ahora = Math.floor(Date.now() / 1000);
+  const duracion = ahora - sesion.inicio;
 
-    // Actualizar el tiempo total de la actividad
-    db.prepare(`
-      UPDATE Actividades
-      SET estado = 'Pausada',
-          tiempo_total_segundos = tiempo_total_segundos + ?
-      WHERE id_actividad = ?
-    `).run(duracion, id_actividad);
+  db.prepare(`
+    UPDATE Sesiones
+    SET fin = ?, duracion_segundos = ?
+    WHERE id_sesion = ?
+  `).run(ahora, duracion, sesion.id_sesion);
 
-    return obtenerActividad(id_actividad);
-  });
-  return ejecutar();
+  db.prepare(`
+    UPDATE Actividades
+    SET estado = 'Pausada',
+        tiempo_total_segundos = tiempo_total_segundos + ?
+    WHERE id_actividad = ?
+  `).run(duracion, id_actividad);
+
+  return obtenerActividad(id_actividad);
 }
 
 function reanudarSesion(id_actividad) {
   return iniciarSesion(id_actividad);
 }
 
+// finalizarActividad: transacción única, contiene la llamada a pausarSesion (que ahora no tiene transacción)
 function finalizarActividad(id_actividad) {
   const db = getDb();
   const ejecutar = db.transaction(() => {
     const abierta = sesionAbierta(id_actividad);
     if (abierta) {
-      pausarSesion(id_actividad);
+      pausarSesion(id_actividad); // ya no genera transacción anidada
     }
+
     const total = db
       .prepare("SELECT COALESCE(SUM(duracion_segundos), 0) AS total FROM Sesiones WHERE id_actividad = ?")
       .get(id_actividad).total;
+
     db.prepare(`
       UPDATE Actividades
       SET estado = 'Finalizada', tiempo_total_segundos = ?
       WHERE id_actividad = ?
     `).run(total, id_actividad);
+
     return obtenerActividad(id_actividad);
   });
   return ejecutar();
