@@ -7,6 +7,24 @@ const activeProjectBox = document.getElementById("active-project");
 import { DEFAULT_ACTIVITY, DEFAULT_PROJECT} from "./defaultValues.js";
 import { getHistory } from "./historial.js";
 
+
+
+// Informacion que vine de activity de sidebar.ja
+document.addEventListener("activity:select", (e) => {
+    const { actividad, project } = e.detail;
+
+    console.log("Actividad recibida:", actividad);
+    console.log("Proyecto recibido:", project);
+
+    if (!actividad || !project) return;
+
+    activityInput.value = `${actividad.nombre}@${project.nombre}`;
+
+    hideSuggestions();
+
+    activityInput.focus();
+});
+
 // ============ AUTOCMPLETADO ============
 const activityInput = document.getElementById("activity-details");
 const suggestionBox = document.getElementById("suggestion-box");
@@ -71,7 +89,7 @@ function renderSuggestions() {
     if (idx === selectedIndex) {
       div.classList.add("bg-slate-200");
     }
-    div.textContent = `${item.actividad} @ ${item.proyecto}`;
+    div.textContent = `${item.actividad}@${item.proyecto}`;
     div.addEventListener("click", () => selectSuggestion(idx));
     suggestionBox.appendChild(div);
   });
@@ -87,7 +105,7 @@ function hideSuggestions() {
 function selectSuggestion(index) {
   const item = suggestions[index];
   if (!item) return;
-  activityInput.value = `${item.actividad} @ ${item.proyecto}`;
+  activityInput.value = `${item.actividad}@${item.proyecto}`;
   hideSuggestions();
 }
 
@@ -95,6 +113,8 @@ function selectSuggestion(index) {
 activityInput.addEventListener("input", (e) => {
   fetchSuggestions(e.target.value);
 });
+
+
 
 activityInput.addEventListener("keydown", (e) => {
   if (suggestionBox.classList.contains("hidden")) return;
