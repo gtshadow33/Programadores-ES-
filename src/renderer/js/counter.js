@@ -18,7 +18,7 @@ document.addEventListener("activity:select", (e) => {
 
     if (!actividad || !project) return;
 
-    activityInput.value = `${actividad.nombre} @ ${project.nombre}`;
+    activityInput.value = `${actividad.nombre}@${project.nombre}`;
 
     hideSuggestions();
 
@@ -89,7 +89,7 @@ function renderSuggestions() {
     if (idx === selectedIndex) {
       div.classList.add("bg-slate-200");
     }
-    div.textContent = `${item.actividad} @ ${item.proyecto}`;
+    div.textContent = `${item.actividad}@${item.proyecto}`;
     div.addEventListener("click", () => selectSuggestion(idx));
     suggestionBox.appendChild(div);
   });
@@ -105,7 +105,7 @@ function hideSuggestions() {
 function selectSuggestion(index) {
   const item = suggestions[index];
   if (!item) return;
-  activityInput.value = `${item.actividad} @ ${item.proyecto}`;
+  activityInput.value = `${item.actividad}@${item.proyecto}`;
   hideSuggestions();
 }
 
