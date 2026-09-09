@@ -26,7 +26,6 @@
 
         <div class="flex items-center justify-between px-4 py-2 border-b border-slate-200">
             <h2 class="text-lg font-bold text-slate-800">Menu</h2>
-
             <button id="sidebar-close"
                 aria-label="Cerrar menú"
                 class="text-slate-400 hover:text-slate-700 cursor-pointer rounded-md p-1 hover:bg-slate-100">
@@ -37,8 +36,9 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto px-2 py-3 border-b border-slate-200 ">
-            <ul id="" class="space-y-1">
-                <li class="group">
+            <ul class="space-y-1">
+                <!--  AÑADIDO id="export-menu-item" -->
+                <li id="export-menu-item" class="group">
                     <div class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors text-slate-700 hover:bg-slate-100 border-l-4 border-transparent">
                         <div class="flex items-start gap-2">
                             <svg class="size-6">
@@ -47,7 +47,6 @@
                             <span class="truncate"> Exportar </span>
                         </div>
                         <button type="button" class="shrink-0 rounded-md p-1 text-slate-400 hover:text-[#ba4949] hover:bg-white cursor-pointer transition-opacity opacity-100">
-                            
                         </button>
                     </div>
                 </li>
@@ -60,13 +59,11 @@
                             <span class="truncate"> Configuracion </span>
                         </div>
                         <button type="button" class="shrink-0 rounded-md p-1 text-slate-400 hover:text-[#ba4949] hover:bg-white cursor-pointer transition-opacity opacity-100">
-                            
                         </button>
                     </div>
                 </li>
             </ul>
         </nav>
-        
 
         <!-- Lista de proyectos -->
         <nav class="flex-1 overflow-y-auto px-2 py-3">
@@ -88,16 +85,12 @@
         </div>
     </aside>
 
-
     <!-- CONTENIDO -->
     <div class="w-full max-w-md px-4 flex flex-col items-center">
 
         <!-- Encabezado -->
-        <header class="w-full py-2 flex justify-between 
-                    items-center border-b border-black/10 mb-5">
-
+        <header class="w-full py-2 flex justify-between items-center border-b border-black/10 mb-5">
             <div class="flex items-center gap-2">
-
                 <button id="sidebar-open"
                     aria-label="Abrir menú de proyectos"
                     class="text-white/90 hover:text-white cursor-pointer rounded-md p-1 hover:bg-white/10">
@@ -105,7 +98,6 @@
                         <use href="./assets/icons.svg#menu"></use>
                     </svg>
                 </button>
-
                 <div class="flex items-center gap-1.5 font-bold text-lg tracking-tight">
                     <svg class="size-6">
                         <use href="./assets/icons.svg#logo"></use>
@@ -116,188 +108,79 @@
         </header>
 
         <!-- TIMER -->
-        <main class="w-full bg-white/10 backdrop-blur-sm 
-            rounded-lg py-2 px-4 flex 
-            flex-col items-center border border-white/5 shadow-sm">
-
-            <div id="timer-box"
-                class="text-8xl font-bold tracking-tight select-all mb-2 font-sans">
-                00:00
-            </div>
-
-            <div id="active-activity"
-                class="text-[26px] font-bold text-shadow-white text-center w-75"
-                hidden>
-                Actividad
-            </div>
-
-            <div id="active-project"
-                class="text-[18px] font-bold text-gray-400 text-center mb-2 w-75"
-                hidden>
-                Proyecto
-            </div>
+        <main class="w-full bg-white/10 backdrop-blur-sm rounded-lg py-2 px-4 flex flex-col items-center border border-white/5 shadow-sm">
+            <div id="timer-box" class="text-8xl font-bold tracking-tight select-all mb-2 font-sans">00:00</div>
+            <div id="active-activity" class="text-[26px] font-bold text-shadow-white text-center w-75" hidden>Actividad</div>
+            <div id="active-project" class="text-[18px] font-bold text-gray-400 text-center mb-2 w-75" hidden>Proyecto</div>
 
             <div id="activity-details-div" class="relative mb-5 w-75">
-
                 <input id="activity-details"
-                    class="w-full bg-white text-lg
-                    placeholder:text-slate-400 
-                    text-slate-700 border 
-                    border-slate-200 rounded-md px-3 
-                    py-2 transition duration-300 ease 
-                    focus:outline-none focus:border-slate-400 
-                    hover:border-slate-300 shadow-sm focus:shadow"
+                    class="w-full bg-white text-lg placeholder:text-slate-400 text-slate-700 border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
                     placeholder="Actividad @Proyecto">
-
-                <!-- Contenedor de sugerencias -->
                 <div id="suggestion-box"
-                    class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-md shadow-lg mt-1 z-50 hidden max-h-60 overflow-y-auto"></div>
-
+                    class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-md shadow-lg mt-1 z-50 hidden max-h-60 overflow-y-auto">
+                </div>
             </div>
 
-
-            <!-- EMPEZAR -->
             <button id="counter"
-                class="w-48 bg-white text-[#ba4949] 
-                font-bold text-xl uppercase py-3 rounded-md 
-                tracking-wider cursor-pointer
-                hover:bg-[#9e5454] hover:text-white mb-2 
-                flex items-center justify-center gap-2">
-                <svg class="size-6">
-                    <use href="./assets/icons.svg#play"></use>
-                </svg>
-
+                class="w-48 bg-white text-[#ba4949] font-bold text-xl uppercase py-3 rounded-md tracking-wider cursor-pointer hover:bg-[#9e5454] hover:text-white mb-2 flex items-center justify-center gap-2">
+                <svg class="size-6"><use href="./assets/icons.svg#play"></use></svg>
                 Empezar
-
             </button>
 
-
-            <!-- DETENER -->
             <button id="stop"
-                class="w-48 bg-white text-[#ba4949] 
-                font-bold text-xl uppercase py-3 rounded-md 
-                tracking-wider cursor-pointer
-                hover:bg-[#9e5454] hover:text-white mb-2 
-                flex items-center justify-center gap-2"
+                class="w-48 bg-white text-[#ba4949] font-bold text-xl uppercase py-3 rounded-md tracking-wider cursor-pointer hover:bg-[#9e5454] hover:text-white mb-2 flex items-center justify-center gap-2"
                 hidden>
-
-                <svg class="size-6">
-                    <use href="./assets/icons.svg#stop"></use>
-                </svg>
-
+                <svg class="size-6"><use href="./assets/icons.svg#stop"></use></svg>
                 Detener
-
             </button>
-
         </main>
 
-
-        <!-- ========================= -->
         <!-- HISTORIAL -->
-        <!-- ========================= -->
-
-        <section class="w-full ">
-
-            <!-- SOLO ESTA PARTE SE OCULTA -->
+        <section class="w-full">
             <div id="history-section"
-    class="relative flex flex-col mt-5 bg-white shadow-sm border-3 border-slate-200 rounded-lg h-95 overflow-y-auto"
-    hidden>      <!-- ========================= -->
-            <!-- BOTONES SIEMPRE VISIBLES -->
-            <!-- ========================= -->
-
-            <div class="flex justify-around">
-
-            </div>
-
+                class="relative flex flex-col mt-5 bg-white shadow-sm border-3 border-slate-200 rounded-lg h-95 overflow-y-auto"
+                hidden>
+                <div class="flex justify-around"></div>
                 <div class="p-4">
-
                     <div id="activity-list">
-
-                        <!--
-                            Las actividades se añadirán aquí
-                            mediante JavaScript.
-                        -->
-
+                        <!-- Las actividades se añadirán aquí mediante JavaScript -->
                     </div>
-
                 </div>
-
             </div>
         </section>
-
     </div>
 
-
-    <!-- ========================= -->
     <!-- SCRIPTS -->
-    <!-- ========================= -->
-
     <script type="module" src="./js/renderer.js"></script>
     <script type="module" src="./js/counter.js"></script>
     <script type="module" src="./js/sidebar.js"></script>
 
+    <!--script para exportar -->
+    <script type="module" src="./js/export.js"></script>
 
-    <!-- ========================= -->
-    <!-- SCRIPT HISTORIAL -->
-    <!-- ========================= -->
-
+    <!-- Script para ocultar/mostrar historial -->
     <script>
-
         document.addEventListener("DOMContentLoaded", () => {
-
             const activityList = document.getElementById("activity-list");
             const historySection = document.getElementById("history-section");
 
-
             function actualizarHistorial() {
-
-                /*
-                 * Si no hay ningún elemento dentro
-                 * de activity-list, ocultamos únicamente
-                 * history-section.
-                 */
-
                 if (activityList.children.length === 0) {
-
                     historySection.hidden = true;
-
                 } else {
-
                     historySection.hidden = false;
-
                 }
-
             }
 
-
-            // Comprobar nada más cargar la página
             actualizarHistorial();
 
-
-            /*
-             * Detectar automáticamente cuando
-             * otro JavaScript añade o elimina
-             * actividades.
-             */
-
             const observer = new MutationObserver(() => {
-
                 actualizarHistorial();
-
             });
-
-
-            observer.observe(activityList, {
-
-                childList: true,
-                subtree: true
-
-            });
-
+            observer.observe(activityList, { childList: true, subtree: true });
         });
-
     </script>
-
 </body>
 
 </html>
