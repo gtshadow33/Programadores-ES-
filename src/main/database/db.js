@@ -4,11 +4,6 @@ const fs = require("fs");
 
 let db;
 
-/**
- * Inicializa la base de datos.
- * @param {string} [customPath] - Ruta opcional para la base de datos.
- *                                Si no se proporciona, usa la ruta por defecto.
- */
 function initDatabase(customPath) {
   const dbPath = customPath || path.join(__dirname, "../../programadores_es.db");
   const isNew = !fs.existsSync(dbPath);
@@ -30,7 +25,7 @@ function initDatabase(customPath) {
       simbolo     TEXT
     );
 
-    -- Proyectos (con UNIQUE en nombre, CHECK precio >= 0)
+    -- Proyectos
     CREATE TABLE IF NOT EXISTS Proyectos (
       id_proyecto     INTEGER PRIMARY KEY AUTOINCREMENT,
       nombre          TEXT NOT NULL UNIQUE,
@@ -40,7 +35,7 @@ function initDatabase(customPath) {
       observaciones   TEXT
     );
 
-    -- Actividades (con ON DELETE CASCADE)
+    -- Actividades
     CREATE TABLE IF NOT EXISTS Actividades (
       id_actividad          INTEGER PRIMARY KEY AUTOINCREMENT,
       id_proyecto           INTEGER NOT NULL REFERENCES Proyectos(id_proyecto) ON DELETE CASCADE,
@@ -51,7 +46,7 @@ function initDatabase(customPath) {
       observaciones         TEXT
     );
 
-    -- Sesiones (con duracion_segundos, CHECK fin>=inicio, ON DELETE CASCADE)
+    -- Sesiones
     CREATE TABLE IF NOT EXISTS Sesiones (
       id_sesion           INTEGER PRIMARY KEY AUTOINCREMENT,
       id_actividad        INTEGER NOT NULL REFERENCES Actividades(id_actividad) ON DELETE CASCADE,
@@ -62,9 +57,29 @@ function initDatabase(customPath) {
       CHECK(duracion_segundos >= 0)
     );
 
-    -- Índices para rendimiento
+    -- Índices
     CREATE INDEX IF NOT EXISTS idx_actividades_proyecto ON Actividades(id_proyecto);
     CREATE INDEX IF NOT EXISTS idx_sesiones_actividad   ON Sesiones(id_actividad);
+
+    -- =============================================================
+    -- VISTA DE EXPORTACIÓN (CORREGIDA)
+    -- =============================================================
+    CREATE VIEW IF NOT EXISTS v_exportacion AS
+    SELECT
+        s.id_sesion,
+        COALESCE(a.nombre, 'Sin Actividad') AS actividad,
+        COALESCE(p.nombre, 'Sin proyecto') AS proyecto,
+        datetime(s.inicio, 'unixepoch', 'localtime') AS inicio,
+        CASE 
+            WHEN s.fin IS NOT NULL THEN datetime(s.fin, 'unixepoch', 'localtime')
+            ELSE 'En curso'
+        END AS fin,
+        COALESCE(s.duracion_segundos, s.fin - s.inicio, 0) AS duracion_segundos,
+        ROUND(COALESCE(s.duracion_segundos, s.fin - s.inicio, 0) / 3600.0, 2) AS horas
+    FROM Sesiones s
+    LEFT JOIN Actividades a ON s.id_actividad = a.id_actividad
+    LEFT JOIN Proyectos p ON a.id_proyecto = p.id_proyecto
+    ORDER BY s.inicio DESC;
 
     -- Moneda por defecto
     INSERT OR IGNORE INTO Monedas (nombre, codigo, simbolo) VALUES ('Euro', 'EUR', '€');
@@ -74,17 +89,11 @@ function initDatabase(customPath) {
   return db;
 }
 
-/**
- * Devuelve la instancia de la base de datos.
- */
 function getDb() {
   if (!db) throw new Error("La base de datos no está inicializada.");
   return db;
 }
 
-/**
- * Cierra la conexión.
- */
 function closeDatabase() {
   if (db) {
     db.close();
