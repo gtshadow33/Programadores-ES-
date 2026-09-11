@@ -151,7 +151,7 @@ function renderProjects() {
             "flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
 
             isActive
-                ? "bg-[#ba4949]/10 text-[#ba4949] font-semibold border-l-4 border-[#ba4949] pl-2"
+                ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary pl-2"
                 : "text-slate-700 hover:bg-slate-100 border-l-4 border-transparent",
 
         ].join(" ");
@@ -521,7 +521,7 @@ function renderSingleProject(projectId) {
 
         isActive
 
-            ? "bg-[#ba4949]/10 text-[#ba4949] font-semibold border-l-4 border-[#ba4949] pl-2"
+            ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary pl-2"
 
             : "text-slate-700 hover:bg-slate-100 border-l-4 border-transparent",
 
@@ -563,7 +563,7 @@ function selectProject(id) {
 
                 isActive
 
-                    ? "bg-[#ba4949]/10 text-[#ba4949] font-semibold border-l-4 border-[#ba4949] pl-2"
+                    ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary pl-2"
 
                     : "text-slate-700 hover:bg-slate-100 border-l-4 border-transparent",
 

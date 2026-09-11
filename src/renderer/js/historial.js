@@ -6,14 +6,14 @@ const activeActivityBox = document.getElementById("active-activity");
 const activeProjectBox = document.getElementById("active-project");
 const activityDetailsDiv = document.getElementById("activity-details-div");
 
-async function restartActivity (activityId) {
+async function restartActivity(activityId) {
 
-    if(currentSession.timerStamp != null){
+    if (currentSession.timerStamp != null) {
         return;
     }
 
     const newSessionId = await window.api.sesiones.iniciar(activityId);
-    
+
     if (!newSessionId) {
         console.log("No se pudo crear la sesión.");
         return;
@@ -48,27 +48,27 @@ async function restartActivity (activityId) {
 
 }
 
-async function getLastActivities () {
+async function getLastActivities() {
     const numberRows = DEFAULT_HISTORIAL_NUMBER;
     const lastActivities = await window.api.actividades.listarUltimas(numberRows);
-    
+
     if (lastActivities.length == 0) {
         return
     }
-    
+
     const groupedActivities = {};
     const actDates = [];
-    
-    for (const elem of lastActivities){
+
+    for (const elem of lastActivities) {
         const myDate = new Date(elem.fecha * 1000);
         const day = myDate.getDate().toString();
         const year = myDate.getFullYear().toString();
-        const month = (myDate.getMonth()+1).toString();
-        const weekDay = myDate.toLocaleDateString('es-ES', { weekday: 'long'});
+        const month = (myDate.getMonth() + 1).toString();
+        const weekDay = myDate.toLocaleDateString('es-ES', { weekday: 'long' });
 
-        const date_str = weekDay+", "+day.padStart(2,"0")+"-"+month.padStart(2,"0")+"-"+year;
+        const date_str = weekDay + ", " + day.padStart(2, "0") + "-" + month.padStart(2, "0") + "-" + year;
 
-        if (!(date_str in groupedActivities)){
+        if (!(date_str in groupedActivities)) {
             groupedActivities[date_str] = [];
             actDates.push(date_str);
         }
@@ -82,7 +82,7 @@ async function getLastActivities () {
     }
 
     return { actDates, groupedActivities }
-    
+
 }
 
 const factoryActivity = (activity_id, activity_str, project_str, time_str) => {
@@ -107,7 +107,7 @@ const factoryActivity = (activity_id, activity_str, project_str, time_str) => {
     project.textContent = project_str;
 
     leftSection.append(activity, project);
-    
+
     const rightSection = document.createElement("div");
     rightSection.className = "flex justify-center items-center gap-x-3";
 
@@ -116,7 +116,7 @@ const factoryActivity = (activity_id, activity_str, project_str, time_str) => {
     formattedTime.textContent = time_str;
 
     const svgIcon = document.createElementNS(SVG_NS, "svg");
-    svgIcon.classList.add("size-8", "group-hover:text-rose-500");
+    svgIcon.classList.add("size-8", "group-hover:text-emerald-600");
 
     const icon = document.createElementNS(SVG_NS, "use");
 
@@ -133,28 +133,91 @@ const factoryActivity = (activity_id, activity_str, project_str, time_str) => {
 
     container.append(leftSection, rightSection);
 
-    return container;
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.dataset.activityId = activity_id;
+    removeButton.className = "group border border-white text-slate-400 flex justify-center items-center px-3 py-2 mb-2 ms-2 hover:bg-orange-600 rounded-lg transition-colors cursor-pointer";
+
+    removeButton.addEventListener("click", async (e) => {
+        if (currentSession.timerStamp != null) {
+            return;
+        }
+
+        const activityId = Number(e.currentTarget.dataset.activityId);
+
+        if (!confirm("¿Estás seguro de que quieres eliminar esta actividad?")) {
+            return;
+        }
+
+        try {
+            const result = await window.api.actividades.eliminar(activityId);
+
+            if (!result.eliminado) {
+                console.warn(`Activity ${activityId} was not found.`);
+                return;
+            }
+
+            await getHistory();
+
+        } catch (error) {
+            console.error("Error deleting activity:", error);
+        }
+
+    });
+
+    const svgRemoveIcon = document.createElementNS(SVG_NS, "svg");
+    svgRemoveIcon.classList.add("size-8", "group-hover:text-white");
+
+    const removeIcon = document.createElementNS(SVG_NS, "use");
+    removeIcon.setAttribute("href", `${iconUrl}#remove`);
+    svgRemoveIcon.append(removeIcon);
+    removeButton.append(svgRemoveIcon);
+
+    const bigContainer = document.createElement("div");
+    bigContainer.className = "flex gap-1";
+    bigContainer.append(container, removeButton);
+
+    return bigContainer;
 
 }
-async function getHistory(){
-    const data = await getLastActivities();
-    if (!data) return;
-    //clean activity list
-    while(activityList.firstChild) {
-        activityList.removeChild(activityList.lastChild);
-    }
-    for (const dayStr of data.actDates) {
-        const dayRow = document.createElement("div");
-        dayRow.className = "font-medium text-gray-800 mb-2";
-        dayRow.textContent = dayStr
-        activityList.append(dayRow);
 
-        const rows = data.groupedActivities[dayStr];
-        for (const row of rows) {
-            const formattedTime = formatTime(row.tiempo_total * 1000);
-            const elem = factoryActivity(row.activityId, row.activity, row.project, formattedTime);
-            activityList.append(elem);
+async function getHistory() {
+    try {
+
+        // Clean activity list
+        activityList.replaceChildren();
+        const data = await getLastActivities();
+
+        if (!data) {
+            console.warn("No history data returned");
+            return;
         }
+
+        for (const dayStr of data.actDates) {
+            const dayRow = document.createElement("div");
+            dayRow.className = "font-medium text-gray-800 mb-2";
+            dayRow.textContent = dayStr;
+
+            activityList.append(dayRow);
+
+            const rows = data.groupedActivities[dayStr];
+
+            for (const row of rows) {
+                const formattedTime = formatTime(row.tiempo_total * 1000);
+
+                const elem = factoryActivity(
+                    row.activityId,
+                    row.activity,
+                    row.project,
+                    formattedTime
+                );
+
+                activityList.append(elem);
+            }
+        }
+
+    } catch (error) {
+        console.error("Error updating history:", error);
     }
 }
 

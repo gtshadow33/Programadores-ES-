@@ -9,7 +9,7 @@
     <title>Hazlo App</title>
 </head>
 
-<body class="min-h-screen bg-[#ba4949] font-sans text-white
+<body class="min-h-screen bg-primary font-sans text-white
              flex justify-center
              transition-colors duration-500 pb-8">
 
@@ -59,7 +59,7 @@
 
             <ul class="space-y-1">
 
-                <li class="group">
+                <li class="group" id="exportar">
 
                     <div class="flex items-center justify-between gap-2
                                 px-[clamp(10px,1.2vh,12px)]
@@ -87,8 +87,8 @@
 
                 </li>
 
-
-                <li class="group">
+                <!-- Deshabilitado hasta crear una funcionalidad -->
+                <!-- <li class="group text-">
 
                     <div class="flex items-center justify-between gap-2
                                 px-[clamp(10px,1.2vh,12px)]
@@ -114,7 +114,7 @@
 
                     </div>
 
-                </li>
+                </li> -->
 
             </ul>
 
@@ -140,13 +140,13 @@
             <button id="new-project-btn"
                 class="w-full flex items-center justify-center
                        gap-2
-                       bg-[#ba4949] text-white
+                       bg-primary text-white
                        font-semibold
                        py-[clamp(8px,1vh,10px)]
                        rounded-md
                        tracking-wide
                        cursor-pointer
-                       hover:bg-[#9e3f3f]
+                       hover:bg-primary
                        transition-colors
                        text-[clamp(12px,1.3vh,16px)]">
 
@@ -304,7 +304,7 @@
                     class="absolute top-full left-0 right-0
                            bg-white border border-slate-200
                            rounded-md shadow-xl mt-1.5
-                           z-[999] hidden
+                           z-999 hidden
                            max-h-[30vh]
                            overflow-y-auto">
 
@@ -316,7 +316,7 @@
             <!-- EMPEZAR -->
             <button id="counter"
                 class="w-[clamp(150px,40vh,192px)]
-                       bg-white text-[#ba4949]
+                       bg-white text-primary
 
                        font-bold
                        text-[clamp(13px,4vh,20px)]
@@ -327,7 +327,7 @@
                        tracking-wider
                        cursor-pointer
 
-                       hover:bg-[#9e5454]
+                       hover:bg-primary
                        hover:text-white mb-1
 
                        flex items-center justify-center gap-2">
@@ -344,7 +344,7 @@
             <!-- DETENER -->
             <button id="stop"
                 class="w-[clamp(160px,45vh,192px)]
-                       bg-white text-[#ba4949]
+                       bg-white text-primary
 
                        font-bold
                        text-[clamp(13px,4vh,20px)]
@@ -395,12 +395,10 @@
 
                 hidden>
 
-
                 <div class="flex justify-around">
                 </div>
 
-
-                <div class="p-[clamp(8px,2vh,16px)]">
+                <div class="p-[clamp(8px,2vh,16px)] bg-mauve-100">
 
                     <div id="activity-list">
                     </div>
@@ -433,42 +431,23 @@
             const historySection =
                 document.getElementById("history-section");
 
-
             function actualizarHistorial() {
-
                 if (activityList.children.length === 0) {
-
                     historySection.hidden = true;
-
                 } else {
-
                     historySection.hidden = false;
-
                 }
-
             }
-
-
             actualizarHistorial();
-
-
             const observer =
                 new MutationObserver(() => {
-
                     actualizarHistorial();
-
                 });
-
-
             observer.observe(activityList, {
-
                 childList: true,
                 subtree: true
-
             });
-
         });
-
     </script>
 
 </body>
