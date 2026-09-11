@@ -221,6 +221,17 @@ async function getHistory() {
     }
 }
 
+// --- Sincronización con el sidebar ---
+// El sidebar emite estos eventos cuando elimina algo.
+// Refrescamos el historial para que refleje el estado actual de la BD.
+document.addEventListener("activity:deleted", () => {
+    getHistory();
+});
+
+document.addEventListener("project:deleted", () => {
+    getHistory();
+});
+
 (async () => {
     try {
         await getHistory();

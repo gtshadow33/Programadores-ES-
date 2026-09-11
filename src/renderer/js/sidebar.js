@@ -15,6 +15,31 @@ let projects = [];
 let activeProjectId = null;
 const expandedProjects = new Set(); // IDs de proyectos expandidos
 
+// --- Iconos SVG reutilizados ---
+const ICON_CHEVRON_DOWN = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+`;
+
+const ICON_CHEVRON_RIGHT = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+`;
+
+const ICON_TRASH = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-9 0h10" />
+    </svg>
+`;
+
+const ICON_TRASH_SM = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-9 0h10" />
+    </svg>
+`;
+
 
 // --- Apertura / cierre del sidebar ---
 
@@ -45,6 +70,19 @@ document.addEventListener("keydown", (e) => {
         closeSidebar();
     }
 });
+
+
+// --- Feedback visual (toast) ---
+
+function mostrarFeedback(mensaje, tipo = "success") {
+    const toast = document.createElement("div");
+    toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-md text-sm text-white shadow-lg z-50 ${
+        tipo === "success" ? "bg-emerald-600" : "bg-red-600"
+    }`;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 
 
 // --- Cargar proyectos desde la API de Electron ---
@@ -148,7 +186,7 @@ function renderProjects() {
         const header = document.createElement("div");
 
         header.className = [
-            "flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
+            "group flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
 
             isActive
                 ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary pl-2"
@@ -180,48 +218,34 @@ function renderProjects() {
         toggleIcon.className =
             "text-slate-400 text-xs transition-transform duration-200 flex-shrink-0";
 
-
         toggleIcon.innerHTML = isExpanded
+            ? ICON_CHEVRON_DOWN
+            : ICON_CHEVRON_RIGHT;
 
-            // Icono desplegado
-            ? `
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
-            `
 
-            // Icono recogido
-            : `
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9 5l7 7-7 7"
-                    />
-                </svg>
-            `;
+        // --- Botón eliminar proyecto ---
+
+        const deleteProjectBtn =
+            document.createElement("button");
+
+        deleteProjectBtn.type = "button";
+
+        deleteProjectBtn.className =
+            "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
+
+        deleteProjectBtn.title = "Eliminar proyecto";
+
+        deleteProjectBtn.innerHTML = ICON_TRASH;
+
+        deleteProjectBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            eliminarProyectoHandler(project);
+        });
 
 
         header.appendChild(nameSpan);
         header.appendChild(toggleIcon);
+        header.appendChild(deleteProjectBtn);
 
 
         // --- Lista de actividades ---
@@ -247,6 +271,11 @@ function renderProjects() {
         header.addEventListener("click", async (e) => {
 
             e.stopPropagation();
+
+            // Ignorar clicks en botones internos (p.ej. eliminar)
+            if (e.target.closest("button")) {
+                return;
+            }
 
             // Seleccionar proyecto activo
             selectProject(project.id_proyecto);
@@ -369,11 +398,44 @@ function renderActivities(
             document.createElement("li");
 
         item.className =
-            "text-sm text-slate-600 hover:text-slate-800 px-3 py-1 rounded cursor-pointer hover:bg-slate-50 transition-colors";
+            "group flex items-center justify-between gap-1 text-sm text-slate-600 hover:text-slate-800 px-3 py-1 rounded cursor-pointer hover:bg-slate-50 transition-colors";
 
-        item.textContent =
+
+        // --- Nombre de la actividad ---
+
+        const nameSpan =
+            document.createElement("span");
+
+        nameSpan.className =
+            "truncate flex-1";
+
+        nameSpan.textContent =
             actividad.nombre ||
             "Actividad sin nombre";
+
+        item.appendChild(nameSpan);
+
+
+        // --- Botón eliminar actividad ---
+
+        const deleteActBtn =
+            document.createElement("button");
+
+        deleteActBtn.type = "button";
+
+        deleteActBtn.className =
+            "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
+
+        deleteActBtn.title = "Eliminar actividad";
+
+        deleteActBtn.innerHTML = ICON_TRASH_SM;
+
+        deleteActBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            eliminarActividadHandler(actividad, projectId);
+        });
+
+        item.appendChild(deleteActBtn);
 
 
         // --- Evento click en actividad ---
@@ -381,6 +443,11 @@ function renderActivities(
         item.addEventListener("click", (e) => {
 
             e.stopPropagation();
+
+            // Ignorar clicks en el botón de eliminar
+            if (e.target.closest("button")) {
+                return;
+            }
 
             console.log(
                 "Actividad seleccionada:",
@@ -447,49 +514,15 @@ function renderSingleProject(projectId) {
 
     const icon =
         header.querySelector(
-            "span:last-child"
+            "span:last-of-type"
         );
 
 
     if (icon) {
 
         icon.innerHTML = isExpanded
-
-            // Icono desplegado
-            ? `
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
-            `
-
-            // Icono recogido
-            : `
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9 5l7 7-7 7"
-                    />
-                </svg>
-            `;
+            ? ICON_CHEVRON_DOWN
+            : ICON_CHEVRON_RIGHT;
     }
 
 
@@ -517,7 +550,7 @@ function renderSingleProject(projectId) {
 
     header.className = [
 
-        "flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
+        "group flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
 
         isActive
 
@@ -526,6 +559,118 @@ function renderSingleProject(projectId) {
             : "text-slate-700 hover:bg-slate-100 border-l-4 border-transparent",
 
     ].join(" ");
+}
+
+
+// --- Eliminar proyecto ---
+
+async function eliminarProyectoHandler(project) {
+
+    const confirmado = confirm(
+        `¿Eliminar el proyecto "${project.nombre}"? Se eliminarán también sus actividades.`
+    );
+
+    if (!confirmado) {
+        return;
+    }
+
+    try {
+        if (!window.api?.proyectos?.eliminar) {
+            throw new Error("API de proyectos no disponible");
+        }
+
+        const res = await window.api.proyectos.eliminar(
+            project.id_proyecto
+        );
+
+        if (!res?.eliminado) {
+            throw new Error("El proyecto no pudo eliminarse");
+        }
+
+        projects = projects.filter(
+            (p) => p.id_proyecto !== project.id_proyecto
+        );
+
+        expandedProjects.delete(project.id_proyecto);
+
+        if (activeProjectId === project.id_proyecto) {
+            activeProjectId = projects[0]?.id_proyecto ?? null;
+        }
+
+        renderProjects();
+
+        mostrarFeedback(
+            `Proyecto "${project.nombre}" eliminado`,
+            "success"
+        );
+
+        // Notificar al historial (y a quien escuche) que el proyecto fue eliminado
+        document.dispatchEvent(
+            new CustomEvent("project:deleted", {
+                detail: { project }
+            })
+        );
+
+    } catch (error) {
+        console.error("Error eliminando proyecto:", error);
+        mostrarFeedback("Error al eliminar el proyecto", "error");
+    }
+}
+
+
+// --- Eliminar actividad ---
+
+async function eliminarActividadHandler(actividad, projectId) {
+
+    const confirmado = confirm(
+        `¿Eliminar la actividad "${actividad.nombre}"?`
+    );
+
+    if (!confirmado) {
+        return;
+    }
+
+    try {
+        if (!window.api?.actividades?.eliminar) {
+            throw new Error("API de actividades no disponible");
+        }
+
+        const res = await window.api.actividades.eliminar(
+            actividad.id_actividad
+        );
+
+        if (!res?.eliminado) {
+            throw new Error("La actividad no pudo eliminarse");
+        }
+
+        const actividadesActualizadas =
+            await fetchActivities(projectId);
+
+        const project =
+            projects.find((p) => p.id_proyecto === projectId);
+
+        renderActivities(
+            projectId,
+            actividadesActualizadas,
+            project
+        );
+
+        mostrarFeedback(
+            `Actividad "${actividad.nombre}" eliminada`,
+            "success"
+        );
+
+        // Notificar al historial (y a quien escuche) que la actividad fue eliminada
+        document.dispatchEvent(
+            new CustomEvent("activity:deleted", {
+                detail: { actividad, projectId }
+            })
+        );
+
+    } catch (error) {
+        console.error("Error eliminando actividad:", error);
+        mostrarFeedback("Error al eliminar la actividad", "error");
+    }
 }
 
 
@@ -559,7 +704,7 @@ function selectProject(id) {
 
             header.className = [
 
-                "flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
+                "group flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
 
                 isActive
 
