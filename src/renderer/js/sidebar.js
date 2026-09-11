@@ -1,7 +1,7 @@
 // js/sidebar.js
 // Lógica del menú lateral: lista de proyectos con actividades desplegables.
 // Al desplegar un proyecto, se recargan sus actividades desde la base de datos.
-// Escucha eventos de creación/actualización de proyectos para refrescar la lista.
+
 
 // --- Referencias DOM ---
 const sidebar = document.getElementById("sidebar");
@@ -51,7 +51,6 @@ function openSidebar() {
         overlay.classList.add("opacity-100");
     });
 
-    // Recargar proyectos al abrir
     setTimeout(() => cargarProyectos(), 150);
 }
 
@@ -173,15 +172,10 @@ function renderProjects() {
             expandedProjects.has(project.id_proyecto);
 
 
-        // --- Contenedor del proyecto ---
-
         const container = document.createElement("li");
 
-        container.className =
-            "project-container";
+        container.className = "project-container";
 
-
-        // --- Cabecera del proyecto ---
 
         const header = document.createElement("div");
 
@@ -194,26 +188,16 @@ function renderProjects() {
 
         ].join(" ");
 
-        header.dataset.projectId =
-            project.id_proyecto;
+        header.dataset.projectId = project.id_proyecto;
 
 
-        // --- Nombre del proyecto ---
+        const nameSpan = document.createElement("span");
 
-        const nameSpan =
-            document.createElement("span");
-
-        nameSpan.className =
-            "truncate flex-1";
-
-        nameSpan.textContent =
-            project.nombre;
+        nameSpan.className = "truncate flex-1";
+        nameSpan.textContent = project.nombre;
 
 
-        // --- Icono de expandir/colapsar ---
-
-        const toggleIcon =
-            document.createElement("span");
+        const toggleIcon = document.createElement("span");
 
         toggleIcon.className =
             "text-slate-400 text-xs transition-transform duration-200 flex-shrink-0";
@@ -223,10 +207,7 @@ function renderProjects() {
             : ICON_CHEVRON_RIGHT;
 
 
-        // --- Botón eliminar proyecto ---
-
-        const deleteProjectBtn =
-            document.createElement("button");
+        const deleteProjectBtn = document.createElement("button");
 
         deleteProjectBtn.type = "button";
 
@@ -234,7 +215,6 @@ function renderProjects() {
             "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
 
         deleteProjectBtn.title = "Eliminar proyecto";
-
         deleteProjectBtn.innerHTML = ICON_TRASH;
 
         deleteProjectBtn.addEventListener("click", (e) => {
@@ -248,36 +228,24 @@ function renderProjects() {
         header.appendChild(deleteProjectBtn);
 
 
-        // --- Lista de actividades ---
-
-        const activityList =
-            document.createElement("ul");
+        const activityList = document.createElement("ul");
 
         activityList.className =
             "ml-4 mt-1 space-y-0.5 overflow-hidden transition-all duration-200";
 
-        activityList.style.maxHeight =
-            isExpanded ? "1000px" : "0";
+        activityList.style.maxHeight = isExpanded ? "1000px" : "0";
+        activityList.style.opacity = isExpanded ? "1" : "0";
+        activityList.dataset.projectId = project.id_proyecto;
 
-        activityList.style.opacity =
-            isExpanded ? "1" : "0";
-
-        activityList.dataset.projectId =
-            project.id_proyecto;
-
-
-        // --- Evento click en la cabecera ---
 
         header.addEventListener("click", async (e) => {
 
             e.stopPropagation();
 
-            // Ignorar clicks en botones internos (p.ej. eliminar)
             if (e.target.closest("button")) {
                 return;
             }
 
-            // Seleccionar proyecto activo
             selectProject(project.id_proyecto);
 
             const wasExpanded =
@@ -286,28 +254,15 @@ function renderProjects() {
 
             if (wasExpanded) {
 
-                // --- Colapsar ---
-
-                expandedProjects.delete(
-                    project.id_proyecto
-                );
-
-                renderSingleProject(
-                    project.id_proyecto
-                );
+                expandedProjects.delete(project.id_proyecto);
+                renderSingleProject(project.id_proyecto);
 
             } else {
 
-                // --- Expandir y cargar actividades ---
-
-                expandedProjects.add(
-                    project.id_proyecto
-                );
+                expandedProjects.add(project.id_proyecto);
 
                 const actividades =
-                    await fetchActivities(
-                        project.id_proyecto
-                    );
+                    await fetchActivities(project.id_proyecto);
 
                 renderActivities(
                     project.id_proyecto,
@@ -315,9 +270,7 @@ function renderProjects() {
                     project
                 );
 
-                renderSingleProject(
-                    project.id_proyecto
-                );
+                renderSingleProject(project.id_proyecto);
             }
         });
 
@@ -328,13 +281,9 @@ function renderProjects() {
         projectListEl.appendChild(container);
 
 
-        // --- Si está expandido, cargar actividades ---
-
         if (isExpanded) {
 
-            fetchActivities(
-                project.id_proyecto
-            ).then((actividades) => {
+            fetchActivities(project.id_proyecto).then((actividades) => {
 
                 renderActivities(
                     project.id_proyecto,
@@ -351,16 +300,10 @@ function renderProjects() {
 
 // --- Renderizar actividades de un proyecto específico ---
 
-function renderActivities(
-    projectId,
-    actividades,
-    project
-) {
+function renderActivities(projectId, actividades, project) {
 
     const activityList =
-        document.querySelector(
-            `ul[data-project-id="${projectId}"]`
-        );
+        document.querySelector(`ul[data-project-id="${projectId}"]`);
 
     if (!activityList) {
         return;
@@ -369,57 +312,37 @@ function renderActivities(
     activityList.innerHTML = "";
 
 
-    // --- Sin actividades ---
-
     if (actividades.length === 0) {
 
-        const emptyItem =
-            document.createElement("li");
+        const emptyItem = document.createElement("li");
 
-        emptyItem.className =
-            "text-xs text-slate-400 px-3 py-1";
+        emptyItem.className = "text-xs text-slate-400 px-3 py-1";
+        emptyItem.textContent = "Sin actividades";
 
-        emptyItem.textContent =
-            "Sin actividades";
-
-        activityList.appendChild(
-            emptyItem
-        );
+        activityList.appendChild(emptyItem);
 
         return;
     }
 
 
-    // --- Renderizar actividades ---
-
     actividades.forEach((actividad) => {
 
-        const item =
-            document.createElement("li");
+        const item = document.createElement("li");
 
         item.className =
             "group flex items-center justify-between gap-1 text-sm text-slate-600 hover:text-slate-800 px-3 py-1 rounded cursor-pointer hover:bg-slate-50 transition-colors";
 
 
-        // --- Nombre de la actividad ---
+        const nameSpan = document.createElement("span");
 
-        const nameSpan =
-            document.createElement("span");
-
-        nameSpan.className =
-            "truncate flex-1";
-
+        nameSpan.className = "truncate flex-1";
         nameSpan.textContent =
-            actividad.nombre ||
-            "Actividad sin nombre";
+            actividad.nombre || "Actividad sin nombre";
 
         item.appendChild(nameSpan);
 
 
-        // --- Botón eliminar actividad ---
-
-        const deleteActBtn =
-            document.createElement("button");
+        const deleteActBtn = document.createElement("button");
 
         deleteActBtn.type = "button";
 
@@ -427,7 +350,6 @@ function renderActivities(
             "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
 
         deleteActBtn.title = "Eliminar actividad";
-
         deleteActBtn.innerHTML = ICON_TRASH_SM;
 
         deleteActBtn.addEventListener("click", (e) => {
@@ -438,45 +360,29 @@ function renderActivities(
         item.appendChild(deleteActBtn);
 
 
-        // --- Evento click en actividad ---
-
         item.addEventListener("click", (e) => {
 
             e.stopPropagation();
 
-            // Ignorar clicks en el botón de eliminar
             if (e.target.closest("button")) {
                 return;
             }
 
-            console.log(
-                "Actividad seleccionada:",
-                actividad
-            );
-
-            console.log(
-                "Proyecto seleccionado:",
-                project
-            );
-
+            console.log("Actividad seleccionada:", actividad);
+            console.log("Proyecto seleccionado:", project);
 
             document.dispatchEvent(
-                new CustomEvent(
-                    "activity:select",
-                    {
-                        detail: {
-                            actividad: actividad,
-                            project: project
-                        }
+                new CustomEvent("activity:select", {
+                    detail: {
+                        actividad: actividad,
+                        project: project
                     }
-                )
+                })
             );
-
         });
 
 
         activityList.appendChild(item);
-
     });
 }
 
@@ -485,77 +391,42 @@ function renderActivities(
 
 function renderSingleProject(projectId) {
 
-    const container =
-        document.querySelector(
-            `li.project-container:has([data-project-id="${projectId}"])`
-        );
+    const container = document.querySelector(
+        `li.project-container:has([data-project-id="${projectId}"])`
+    );
 
     if (!container) {
         return;
     }
 
+    const header = container.querySelector("div[data-project-id]");
+    const activityList = container.querySelector("ul[data-project-id]");
 
-    const header =
-        container.querySelector(
-            "div[data-project-id]"
-        );
-
-    const activityList =
-        container.querySelector(
-            "ul[data-project-id]"
-        );
+    const isExpanded = expandedProjects.has(projectId);
 
 
-    const isExpanded =
-        expandedProjects.has(projectId);
-
-
-    // --- Actualizar icono ---
-
-    const icon =
-        header.querySelector(
-            "span:last-of-type"
-        );
-
+    const icon = header.querySelector("span:last-of-type");
 
     if (icon) {
-
         icon.innerHTML = isExpanded
             ? ICON_CHEVRON_DOWN
             : ICON_CHEVRON_RIGHT;
     }
 
 
-    // --- Mostrar/ocultar lista ---
-
     if (activityList) {
-
-        activityList.style.maxHeight =
-            isExpanded
-                ? "1000px"
-                : "0";
-
-        activityList.style.opacity =
-            isExpanded
-                ? "1"
-                : "0";
+        activityList.style.maxHeight = isExpanded ? "1000px" : "0";
+        activityList.style.opacity = isExpanded ? "1" : "0";
     }
 
 
-    // --- Actualizar estilo de activo ---
-
-    const isActive =
-        projectId === activeProjectId;
-
+    const isActive = projectId === activeProjectId;
 
     header.className = [
-
         "group flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
 
         isActive
-
             ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary pl-2"
-
             : "text-slate-700 hover:bg-slate-100 border-l-4 border-transparent",
 
     ].join(" ");
@@ -604,7 +475,6 @@ async function eliminarProyectoHandler(project) {
             "success"
         );
 
-        // Notificar al historial (y a quien escuche) que el proyecto fue eliminado
         document.dispatchEvent(
             new CustomEvent("project:deleted", {
                 detail: { project }
@@ -660,7 +530,6 @@ async function eliminarActividadHandler(actividad, projectId) {
             "success"
         );
 
-        // Notificar al historial (y a quien escuche) que la actividad fue eliminada
         document.dispatchEvent(
             new CustomEvent("activity:deleted", {
                 detail: { actividad, projectId }
@@ -684,85 +553,43 @@ function selectProject(id) {
 
     activeProjectId = id;
 
-
-    // Actualizar visualmente todos los proyectos
-
     document
-        .querySelectorAll(
-            "div[data-project-id]"
-        )
+        .querySelectorAll("div[data-project-id]")
         .forEach((header) => {
 
-            const pid =
-                parseInt(
-                    header.dataset.projectId
-                );
-
-            const isActive =
-                pid === activeProjectId;
-
+            const pid = parseInt(header.dataset.projectId);
+            const isActive = pid === activeProjectId;
 
             header.className = [
-
                 "group flex items-center justify-between gap-2 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
 
                 isActive
-
                     ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary pl-2"
-
                     : "text-slate-700 hover:bg-slate-100 border-l-4 border-transparent",
 
             ].join(" ");
-
         });
 
 
-    const project =
-        projects.find(
-            (p) =>
-                p.id_proyecto === id
-        );
-
+    const project = projects.find((p) => p.id_proyecto === id);
 
     document.dispatchEvent(
-        new CustomEvent(
-            "project:select",
-            {
-                detail: {
-                    project
-                }
-            }
-        )
+        new CustomEvent("project:select", {
+            detail: { project }
+        })
     );
 }
-
-
-// --- Escuchar eventos de creación/actualización de proyectos ---
-
-document.addEventListener(
-    "project:create",
-    cargarProyectos
-);
-
-document.addEventListener(
-    "project:created",
-    cargarProyectos
-);
 
 
 // --- Inicialización ---
 
 if (document.readyState === "loading") {
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        cargarProyectos
-    );
+    document.addEventListener("DOMContentLoaded", cargarProyectos);
 
 } else {
 
     cargarProyectos();
-
 }
 
 
