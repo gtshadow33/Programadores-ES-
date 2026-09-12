@@ -2,6 +2,23 @@
 // Lógica del menú lateral: lista de proyectos con actividades desplegables.
 // Al desplegar un proyecto, se recargan sus actividades desde la base de datos.
 
+import { confirmar } from "./confirm-dialog.js";
+
+window.addEventListener("focus", () => {
+    console.log("WINDOW FOCUS");
+});
+
+window.addEventListener("blur", () => {
+    console.log("WINDOW BLUR");
+});
+
+document.addEventListener("focusin", (e) => {
+    console.log("FOCUS IN:", e.target);
+});
+
+document.addEventListener("focusout", (e) => {
+    console.log("FOCUS OUT:", e.target);
+});
 
 // --- Referencias DOM ---
 const sidebar = document.getElementById("sidebar");
@@ -437,9 +454,13 @@ function renderSingleProject(projectId) {
 
 async function eliminarProyectoHandler(project) {
 
-    const confirmado = confirm(
-        `¿Eliminar el proyecto "${project.nombre}"? Se eliminarán también sus actividades.`
-    );
+    const confirmado = await confirmar({
+        titulo: "Eliminar proyecto",
+        mensaje: `¿Eliminar el proyecto "${project.nombre}"? Se eliminarán también sus actividades.`,
+        textoConfirmar: "Eliminar",
+        textoCancelar: "Cancelar",
+        peligro: true,
+    });
 
     if (!confirmado) {
         return;
@@ -492,9 +513,13 @@ async function eliminarProyectoHandler(project) {
 
 async function eliminarActividadHandler(actividad, projectId) {
 
-    const confirmado = confirm(
-        `¿Eliminar la actividad "${actividad.nombre}"?`
-    );
+    const confirmado = await confirmar({
+        titulo: "Eliminar actividad",
+        mensaje: `¿Eliminar la actividad "${actividad.nombre}"?`,
+        textoConfirmar: "Eliminar",
+        textoCancelar: "Cancelar",
+        peligro: true,
+    });
 
     if (!confirmado) {
         return;

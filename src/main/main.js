@@ -7,10 +7,10 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 600,
-    height: 800,
-    minWidth: 400,
-    minHeight: 500,
+    width: 400,
+    height: 500,
+    minWidth: 250,
+    minHeight: 350,
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.js"),
       contextIsolation: true,
@@ -20,7 +20,7 @@ function createWindow() {
   
   mainWindow.loadFile("./src/renderer/index.html");
 
-  mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
+  //mainWindow.webContents.openDevTools(); // Descomenta para abrir las herramientas de desarrollo
 }
 
 app.whenReady().then(() => {
