@@ -66,7 +66,7 @@ function initDatabase(customPath) {
     CREATE INDEX IF NOT EXISTS idx_proyectos_nombre     ON Proyectos(nombre);
 
     -- =============================================================
-    -- VISTA DE EXPORTACIÓN (con LIMIT 20)
+    -- VISTA DE EXPORTACIÓN 
     -- =============================================================
     CREATE VIEW IF NOT EXISTS v_exportacion AS
     SELECT
@@ -84,7 +84,7 @@ function initDatabase(customPath) {
     LEFT JOIN Actividades a ON s.id_actividad = a.id_actividad
     LEFT JOIN Proyectos p ON a.id_proyecto = p.id_proyecto
     ORDER BY s.inicio DESC
-    LIMIT 20;
+    ;
 
     -- Moneda por defecto
     INSERT OR IGNORE INTO Monedas (nombre, codigo, simbolo) VALUES ('Euro', 'EUR', '€');
