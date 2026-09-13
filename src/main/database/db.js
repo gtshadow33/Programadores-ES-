@@ -61,8 +61,12 @@ function initDatabase(customPath) {
     CREATE INDEX IF NOT EXISTS idx_actividades_proyecto ON Actividades(id_proyecto);
     CREATE INDEX IF NOT EXISTS idx_sesiones_actividad   ON Sesiones(id_actividad);
 
+    -- Índices para búsquedas por nombre
+    CREATE INDEX IF NOT EXISTS idx_actividades_nombre   ON Actividades(nombre);
+    CREATE INDEX IF NOT EXISTS idx_proyectos_nombre     ON Proyectos(nombre);
+
     -- =============================================================
-    -- VISTA DE EXPORTACIÓN (CORREGIDA)
+    -- VISTA DE EXPORTACIÓN (con LIMIT 20)
     -- =============================================================
     CREATE VIEW IF NOT EXISTS v_exportacion AS
     SELECT
@@ -79,7 +83,8 @@ function initDatabase(customPath) {
     FROM Sesiones s
     LEFT JOIN Actividades a ON s.id_actividad = a.id_actividad
     LEFT JOIN Proyectos p ON a.id_proyecto = p.id_proyecto
-    ORDER BY s.inicio DESC;
+    ORDER BY s.inicio DESC
+    LIMIT 20;
 
     -- Moneda por defecto
     INSERT OR IGNORE INTO Monedas (nombre, codigo, simbolo) VALUES ('Euro', 'EUR', '€');

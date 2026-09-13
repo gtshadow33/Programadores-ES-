@@ -1,5 +1,6 @@
 import { DEFAULT_HISTORIAL_NUMBER } from "./defaultValues.js";
 import { formatTime, currentSession, updateTimer } from "./counter.js";
+import { confirmar } from "./confirm-dialog.js";
 
 const activityList = document.getElementById("activity-list");
 const activeActivityBox = document.getElementById("active-activity");
@@ -145,7 +146,15 @@ const factoryActivity = (activity_id, activity_str, project_str, time_str) => {
 
         const activityId = Number(e.currentTarget.dataset.activityId);
 
-        if (!confirm("¿Estás seguro de que quieres eliminar esta actividad?")) {
+        const confirmado = await confirmar({
+            titulo: "Eliminar actividad",
+            mensaje: `¿Eliminar la actividad "${activity_str}"? Esta acción no se puede deshacer.`,
+            textoConfirmar: "Eliminar",
+            textoCancelar: "Cancelar",
+            peligro: true,
+        });
+
+        if (!confirmado) {
             return;
         }
 
@@ -220,6 +229,17 @@ async function getHistory() {
         console.error("Error updating history:", error);
     }
 }
+
+// --- Sincronización con el sidebar ---
+// El sidebar emite estos eventos cuando elimina algo.
+// Refrescamos el historial para que refleje el estado actual de la BD.
+document.addEventListener("activity:deleted", () => {
+    getHistory();
+});
+
+document.addEventListener("project:deleted", () => {
+    getHistory();
+});
 
 (async () => {
     try {

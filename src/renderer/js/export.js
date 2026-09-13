@@ -1,6 +1,6 @@
 // export.js
 document.addEventListener("DOMContentLoaded", () => {
-  const exportMenuItem = document.getElementById("export-menu-item");
+  const exportMenuItem = document.getElementById("exportar");   // ← CAMBIO
   if (!exportMenuItem) return;
 
   exportMenuItem.addEventListener("click", async () => {
