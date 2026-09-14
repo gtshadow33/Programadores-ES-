@@ -3,6 +3,7 @@
 // Al desplegar un proyecto, se recargan sus actividades desde la base de datos.
 
 import { confirmar } from "./confirm-dialog.js";
+import { currentSession } from "./counter.js";   // [1]
 
 window.addEventListener("focus", () => {
     console.log("WINDOW FOCUS");
@@ -86,6 +87,26 @@ document.addEventListener("keydown", (e) => {
         closeSidebar();
     }
 });
+
+
+// --- Helpers de estado de sesión ---                              // [2]
+
+/**
+ * ¿Hay una sesión activa en este momento?
+ * Usa `timerStamp` porque es el indicador más fiable:
+ * se asigna justo cuando arranca el setInterval y se limpia al pararlo.
+ */
+function haySesionActiva() {
+    return currentSession.timerStamp != null;
+}
+
+/**
+ * ¿La sesión activa (si existe) pertenece a esta actividad?
+ */
+function esActividadEnCurso(actividadId) {
+    return haySesionActiva() &&
+        currentSession.activityId === actividadId;
+}
 
 
 // --- Feedback visual (toast) ---
@@ -180,6 +201,8 @@ function renderProjects() {
         return;
     }
 
+    const sesionActiva = haySesionActiva();                       // [3]
+
     projects.forEach((project) => {
 
         const isActive =
@@ -228,10 +251,20 @@ function renderProjects() {
 
         deleteProjectBtn.type = "button";
 
-        deleteProjectBtn.className =
-            "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
+        // [3] Estado visual del botón según sesión activa
+        if (sesionActiva) {
+            deleteProjectBtn.disabled = true;
+            // Visible siempre (no opacity-0) pero apagado y no clickeable.
+            deleteProjectBtn.className =
+                "opacity-40 text-slate-300 cursor-not-allowed rounded p-1 transition-all flex-shrink-0";
+            deleteProjectBtn.title = "Detén la sesión para eliminar";
+        } else {
+            deleteProjectBtn.disabled = false;
+            deleteProjectBtn.className =
+                "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
+            deleteProjectBtn.title = "Eliminar proyecto";
+        }
 
-        deleteProjectBtn.title = "Eliminar proyecto";
         deleteProjectBtn.innerHTML = ICON_TRASH;
 
         deleteProjectBtn.addEventListener("click", (e) => {
@@ -363,10 +396,21 @@ function renderActivities(projectId, actividades, project) {
 
         deleteActBtn.type = "button";
 
-        deleteActBtn.className =
-            "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
+        // [4] Solo se bloquea si ES la actividad en curso
+        const enCurso = esActividadEnCurso(actividad.id_actividad);
 
-        deleteActBtn.title = "Eliminar actividad";
+        if (enCurso) {
+            deleteActBtn.disabled = true;
+            deleteActBtn.className =
+                "opacity-40 text-slate-300 cursor-not-allowed rounded p-1 transition-all flex-shrink-0";
+            deleteActBtn.title = "Actividad en curso";
+        } else {
+            deleteActBtn.disabled = false;
+            deleteActBtn.className =
+                "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all flex-shrink-0";
+            deleteActBtn.title = "Eliminar actividad";
+        }
+
         deleteActBtn.innerHTML = ICON_TRASH_SM;
 
         deleteActBtn.addEventListener("click", (e) => {
@@ -454,6 +498,15 @@ function renderSingleProject(projectId) {
 
 async function eliminarProyectoHandler(project) {
 
+    // [5] Guard: no permitir borrar con sesión activa
+    if (haySesionActiva()) {
+        mostrarFeedback(
+            "Detén la sesión en curso antes de eliminar proyectos",
+            "error"
+        );
+        return;
+    }
+
     const confirmado = await confirmar({
         titulo: "Eliminar proyecto",
         mensaje: `¿Eliminar el proyecto "${project.nombre}"? Se eliminarán también sus actividades.`,
@@ -512,6 +565,15 @@ async function eliminarProyectoHandler(project) {
 // --- Eliminar actividad ---
 
 async function eliminarActividadHandler(actividad, projectId) {
+
+    // [6] Guard: no permitir borrar la actividad que está corriendo
+    if (esActividadEnCurso(actividad.id_actividad)) {
+        mostrarFeedback(
+            "No puedes eliminar la actividad que está en curso. Detén el timer primero.",
+            "error"
+        );
+        return;
+    }
 
     const confirmado = await confirmar({
         titulo: "Eliminar actividad",
@@ -604,6 +666,13 @@ function selectProject(id) {
         })
     );
 }
+
+
+// --- Re-render al cambiar el estado de la sesión ---              // [7]
+
+document.addEventListener("session:state-change", () => {
+    renderProjects();
+});
 
 
 // --- Inicialización ---
