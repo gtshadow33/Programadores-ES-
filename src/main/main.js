@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const { initDatabase, closeDatabase } = require("./database/db");
 const repo = require("./database/repository");
 const path = require("path");
@@ -24,7 +24,9 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  initDatabase(); 
+  initDatabase();
+  // Remover menu insertado por defecto
+  Menu.setApplicationMenu(null);
   createWindow();
 
   app.on("activate", () => {
