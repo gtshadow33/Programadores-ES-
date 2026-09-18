@@ -21,9 +21,20 @@
   "scripts": {
     "dev": "electron .",
     "start": "electron .",
+    "dist": "electron-builder --linux AppImage",
     "test": "jest",
     "css:build": "npx @tailwindcss/cli -i src/renderer/css/input.css -o src/renderer/css/styles.css --minify",
     "css:watch": "npx @tailwindcss/cli -i src/renderer/css/input.css -o src/renderer/css/styles.css --watch"
+  },
+  "build": {
+    "appId": "com.programadoreses.app",
+    "productName": "Hazlo",
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -32,6 +43,7 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
     "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
     "jest": "^30.4.2",
     "tailwindcss": "^4.3.3"
   }

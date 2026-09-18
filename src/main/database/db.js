@@ -1,11 +1,12 @@
 const path = require("path");
 const Database = require("better-sqlite3");
 const fs = require("fs");
+const { app } = require("electron");
 
 let db;
 
 function initDatabase(customPath) {
-  const dbPath = customPath || path.join(__dirname, "../../programadores_es.db");
+  const dbPath = customPath || path.join(app.getPath("userData"), "programadores_es.db");
   const isNew = !fs.existsSync(dbPath);
 
   db = new Database(dbPath);
