@@ -2,21 +2,11 @@
   "name": "programadores-es",
   "version": "1.0.0",
   "description": "Aplicación de escritorio desarrollada con Electron",
-  "keywords": [
-    "electron",
-    "nodejs",
-    "sqlite3"
-  ],
+  "keywords": ["electron", "nodejs", "sqlite3"],
   "homepage": "https://github.com/gtshadow33/Programadores-ES-#readme",
-  "bugs": {
-    "url": "https://github.com/gtshadow33/Programadores-ES-/issues"
-  },
+  "bugs": {"url": "https://github.com/gtshadow33/Programadores-ES-/issues"},
   "license": "ISC",
-  "author": "",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gtshadow33/Programadores-ES-.git"
-  },
+  "repository": {"type": "git", "url": "git+https://github.com/gtshadow33/Programadores-ES-.git"},
   "main": "src/main/main.js",
   "scripts": {
     "dev": "electron .",
@@ -29,16 +19,22 @@
   "build": {
     "appId": "com.programadoreses.app",
     "productName": "Hazlo",
+    "asar": true,
+    "compression": "normal",
+    "files": [
+      "src/**/*",
+      "!src/**/*.map",
+      "!src/**/*.test.js",
+      "!src/**/spec/**"
+    ],
+    "asarUnpack": ["node_modules/better-sqlite3/**/*.node"],
     "linux": {
-      "target": [
-        "AppImage"
-      ],
+      "target": ["AppImage"],
       "category": "Utility"
     }
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.3",
-    "sqlite3": "^6.0.1"
+    "better-sqlite3": "^13.0.3"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
